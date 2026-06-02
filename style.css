@@ -785,6 +785,60 @@ footer {
   line-height: 1.5;
 }
 
+.play-protect-box {
+  background: rgba(245, 158, 11, 0.02);
+  border: 1px solid rgba(245, 158, 11, 0.12);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  max-width: 540px;
+}
+
+.warning-tag {
+  display: inline-block;
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.warning-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.steps-details {
+  font-size: 13px;
+}
+
+.steps-details summary {
+  color: var(--accent-mint);
+  cursor: pointer;
+  font-weight: 600;
+  outline: none;
+  user-select: none;
+}
+
+.steps-details summary:hover {
+  color: var(--accent-mint-hover);
+}
+
+.steps-list {
+  margin-top: 10px;
+  padding-left: 20px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.steps-list li {
+  margin-bottom: 6px;
+}
+
 /* Animations */
 @keyframes pulse {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
