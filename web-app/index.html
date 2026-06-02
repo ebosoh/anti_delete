@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anti-Delete | Recover Deleted WhatsApp Messages</title>
+  <meta name="description" content="Never miss a deleted message again. Anti-Delete runs silently in the background, keeping a private local copy of your notifications. Less than 100 KB footprint.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10B981">
+  
+  <!-- GA4 Tracking (Placeholder - Will be updated with user ID) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GA4_PROPERTY_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-GA4_PROPERTY_ID');
+  </script>
+</head>
+<body>
+
+  <!-- Background Glows -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-container">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span>AntiDelete</span>
+      </div>
+      
+      <!-- Native Service Status (hidden on Web Landing, visible inside APK WebView) -->
+      <div id="serviceStatus" class="service-status hidden">
+        <span class="status-indicator"></span>
+        <span class="status-text">Active</span>
+      </div>
+      
+      <nav>
+        <a href="#features" class="nav-link web-only">Features</a>
+        <a href="#stats" class="nav-link web-only">Stats</a>
+        <a href="admin.html" class="nav-link">Admin Portal</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main class="container">
+    
+    <!-- ==================== LANDING PAGE VIEW (Browser / Non-APK) ==================== -->
+    <section id="landingView" class="view-section">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="tagline">🔒 100% Secure & On-Device</div>
+          <h1>Never Miss a <span class="gradient-text">Deleted Message</span> Again</h1>
+          <p class="hero-desc">
+            Anti-Delete runs silently in the background of your phone, intercepting WhatsApp alerts and keeping a private local copy. Even if the sender clicks "Delete for Everyone", you still have it.
+          </p>
+          
+          <div class="cta-group">
+            <button id="downloadApkBtn" class="btn btn-primary">
+              <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download Tiny APK <span class="badge">45 KB</span></span>
+            </button>
+            <button id="pwaInstallBtn" class="btn btn-secondary hidden">
+              <span>Install Web App</span>
+            </button>
+          </div>
+          
+          <!-- Viral Share Status Card -->
+          <div class="share-box">
+            <p>📣 Saved 1,000+ deleted messages this week! Keep your WhatsApp chats complete.</p>
+            <button id="shareStatusBtn" class="btn-share">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              Share with Friends
+            </button>
+          </div>
+        </div>
+        
+        <!-- Live Demo / Phone Mockup -->
+        <div class="hero-preview">
+          <div class="phone-mockup">
+            <div class="phone-speaker"></div>
+            <div class="phone-screen">
+              <div class="chat-header">
+                <div class="chat-avatar">JD</div>
+                <div class="chat-info">
+                  <div class="chat-name">John Doe</div>
+                  <div class="chat-status">typing...</div>
+                </div>
+              </div>
+              <div class="chat-body" id="chatDemoBody">
+                <div class="chat-bubble received">
+                  <span class="bubble-text">Hey, are you free tonight?</span>
+                  <span class="bubble-time">10:05 PM</span>
+                </div>
+                <div class="chat-bubble received deleted-placeholder" id="deletedBubble">
+                  <span class="bubble-text italic">🚫 This message was deleted.</span>
+                  <span class="bubble-time">10:06 PM</span>
+                </div>
+                <div class="chat-bubble received recovered hidden" id="recoveredBubble">
+                  <div class="recovered-badge">🛡️ Recovered by Anti-Delete</div>
+                  <span class="bubble-text">I bought you a surprise gift! 🎁</span>
+                  <span class="bubble-time">10:06 PM</span>
+                </div>
+              </div>
+              <div class="demo-trigger-area">
+                <button class="btn-demo" id="triggerDemoBtn">Simulate Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div id="stats" class="stats-section">
+        <h2>Platform Statistics</h2>
+        <div class="stats-grid">
+          <div class="stats-card">
+            <div class="stats-icon">👥</div>
+            <div class="stats-number" id="visitorCount">...</div>
+            <div class="stats-label">Total Web Visitors</div>
+          </div>
+          <div class="stats-card">
+            <div class="stats-icon">📥</div>
+            <div class="stats-number" id="downloadCount">...</div>
+            <div class="stats-label">App Installations</div>
+          </div>
+          <div class="stats-card">
+            <div class="stats-icon">🛡️</div>
+            <div class="stats-number">100%</div>
+            <div class="stats-label">Privacy Protected (Local)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features Section -->
+      <div id="features" class="features-section">
+        <h2>Why Users Love Anti-Delete</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>🪶 Ultra-Lightweight</h3>
+            <p>At under 100 KB, the app uses virtually zero memory, storage, or processing power, preserving your battery life.</p>
+          </div>
+          <div class="feature-card">
+            <h3>👁️ Instant Capture</h3>
+            <p>Incoming alerts are saved immediately when they hit your phone, bypassing the sender's attempts to wipe them.</p>
+          </div>
+          <div class="feature-card">
+            <h3>🔒 Complete Privacy</h3>
+            <p>We do not upload your messages to any servers. All chat logs are saved in a local, encrypted SQLite database on your device.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LOGGED IN MESSAGES VIEW (Inside APK) ==================== -->
+    <section id="appView" class="view-section hidden">
+      <div class="messages-container">
+        
+        <div class="search-bar-container">
+          <input type="text" id="searchBar" class="search-input" placeholder="Search chats or messages...">
+          <button id="refreshBtn" class="btn btn-secondary btn-icon-only">🔄</button>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="tab-btn active" data-filter="all">All Messages</button>
+          <button class="tab-btn" data-filter="deleted">Deleted Only</button>
+        </div>
+
+        <div id="messagesList" class="messages-list">
+          <!-- Dynamically populated -->
+          <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <p>No messages captured yet. Send a message on WhatsApp to test.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Banner Ads Space -->
+  <div id="adContainer" class="ad-container hidden">
+    <div class="ad-header">
+      <span>Sponsored Ad</span>
+      <button id="closeAdBtn" class="ad-close-btn">&times;</button>
+    </div>
+    <div id="adContent" class="ad-content">
+      <a href="#" id="adLink" target="_blank">
+        <img src="https://via.placeholder.com/728x90.png?text=Premium+Ad+Banner" alt="Advertisement" id="adImage">
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Anti-Delete App. Open Source & Privacy First.</p>
+      <div class="footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

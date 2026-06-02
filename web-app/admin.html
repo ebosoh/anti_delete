@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anti-Delete Admin | Ads & Stats Management</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-container {
+      max-width: 800px;
+      margin: 50px auto;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .form-group label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .form-input {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+    }
+    
+    .form-input:focus {
+      border-color: var(--accent-mint);
+    }
+    
+    .table-container {
+      margin-top: 30px;
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+    }
+    
+    th {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: var(--accent-mint);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow bg-glow-1"></div>
+
+  <header>
+    <div class="container header-container">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span>AntiDelete Admin</span>
+      </div>
+      <a href="index.html" class="nav-link">Main App</a>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <!-- Auth Section -->
+    <div id="authBox" class="admin-container">
+      <a href="index.html" class="back-link">&larr; Back to App</a>
+      <h2 style="margin-bottom: 20px; font-family: var(--font-title);">Admin Portal Authentication</h2>
+      
+      <div class="form-group">
+        <label for="adminPassword">Enter Admin Password</label>
+        <input type="password" id="adminPassword" class="form-input" placeholder="Enter password...">
+      </div>
+      
+      <button id="loginBtn" class="btn btn-primary" style="width: 100%;">Authenticate</button>
+      <p id="authError" style="color: #ef4444; margin-top: 12px; font-size: 14px;" class="hidden">Incorrect password. Please try again.</p>
+    </div>
+
+    <!-- Dashboard Section (Hidden by Default) -->
+    <div id="dashboardBox" class="admin-container hidden">
+      <a href="index.html" class="back-link">&larr; Go to Home</a>
+      <h2 style="margin-bottom: 30px; font-family: var(--font-title);">Ads & Statistics Dashboard</h2>
+
+      <!-- Mini Stats Row -->
+      <div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 40px; gap: 20px;">
+        <div class="stats-card">
+          <div class="stats-number" id="dashVisitors">0</div>
+          <div class="stats-label">Total Web Visitors</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-number" id="dashDownloads">0</div>
+          <div class="stats-label">Total App Downloads</div>
+        </div>
+      </div>
+
+      <!-- Upload Ad Section -->
+      <h3 style="margin-bottom: 15px; font-family: var(--font-title);">Upload Sponsored Ad</h3>
+      <div class="form-group">
+        <label for="adImageUrl">Banner Image URL (Suggested size: 728x90)</label>
+        <input type="url" id="adImageUrl" class="form-input" placeholder="https://example.com/ad-banner.png">
+      </div>
+      <div class="form-group">
+        <label for="adRedirectUrl">Click-Through Redirect URL</label>
+        <input type="url" id="adRedirectUrl" class="form-input" placeholder="https://sponsorwebsite.com">
+      </div>
+      <button id="submitAdBtn" class="btn btn-primary">Publish Ad</button>
+      <p id="adFeedback" style="margin-top: 12px; font-size: 14px; font-weight: 600;"></p>
+
+      <!-- Active Ads Table -->
+      <h3 style="margin-top: 40px; margin-bottom: 10px; font-family: var(--font-title);">Active Advertisements</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Banner Image</th>
+              <th>Destination URL</th>
+              <th>Impressions</th>
+              <th>Clicks</th>
+              <th>CTR (%)</th>
+            </tr>
+          </thead>
+          <tbody id="adsTableBody">
+            <!-- Populated dynamically -->
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted);">No ads uploaded yet or backend not connected.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqJ3f5r4806a-placeholder/exec"; // Update with actual URL
+    let adminPass = "";
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const pass = document.getElementById("adminPassword").value;
+      if (pass === "admin123") { // Matches Apps Script backend default
+        adminPass = pass;
+        document.getElementById("authBox").classList.add("hidden");
+        document.getElementById("dashboardBox").classList.remove("hidden");
+        loadDashboardData();
+      } else {
+        const error = document.getElementById("authError");
+        error.classList.remove("hidden");
+      }
+    });
+
+    function loadDashboardData() {
+      if (APPS_SCRIPT_URL.includes("placeholder")) {
+        // Mock dashboard display if backend is not linked
+        document.getElementById("dashVisitors").innerText = "1,240";
+        document.getElementById("dashDownloads").innerText = "432";
+        return;
+      }
+
+      // Fetch Stats
+      fetch(`${APPS_SCRIPT_URL}?action=getStats`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("dashVisitors").innerText = data.visitors.toLocaleString();
+          document.getElementById("dashDownloads").innerText = data.downloads.toLocaleString();
+        })
+        .catch(err => console.error("Error loading stats", err));
+
+      // Fetch Ads List
+      fetch(`${APPS_SCRIPT_URL}?action=getAds`)
+        .then(res => res.json())
+        .then(ads => {
+          const tbody = document.getElementById("adsTableBody");
+          tbody.innerHTML = "";
+
+          if (!ads || ads.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No ads active.</td></tr>';
+            return;
+          }
+
+          ads.forEach(ad => {
+            const tr = document.createElement("tr");
+            const ctr = ad.impressions > 0 ? ((ad.clicks / ad.impressions) * 100).toFixed(1) + "%" : "0%";
+            tr.innerHTML = `
+              <td><a href="${ad.imageUrl}" target="_blank" style="color: var(--accent-mint); font-size:12px; word-break:break-all;">${ad.imageUrl.substring(0, 45)}...</a></td>
+              <td><a href="${ad.redirectUrl}" target="_blank" style="color: var(--text-secondary); font-size:12px; word-break:break-all;">${ad.redirectUrl}</a></td>
+              <td>${ad.impressions}</td>
+              <td>${ad.clicks}</td>
+              <td>${ctr}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(err => console.error("Error loading ads table", err));
+    }
+
+    document.getElementById("submitAdBtn").addEventListener("click", () => {
+      const imageUrl = document.getElementById("adImageUrl").value;
+      const redirectUrl = document.getElementById("adRedirectUrl").value;
+      const feedback = document.getElementById("adFeedback");
+
+      if (!imageUrl || !redirectUrl) {
+        feedback.style.color = "#ef4444";
+        feedback.innerText = "Please provide both the image URL and destination URL.";
+        return;
+      }
+
+      if (APPS_SCRIPT_URL.includes("placeholder")) {
+        feedback.style.color = "#34d399";
+        feedback.innerText = "Demo Mode: Ad validated! (To upload for real, connect the Apps Script URL)";
+        return;
+      }
+
+      feedback.style.color = "#9ca3af";
+      feedback.innerText = "Publishing ad...";
+
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // Required for Apps Script web app requests without CORS preflight
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "uploadAd",
+          password: adminPass,
+          imageUrl: imageUrl,
+          redirectUrl: redirectUrl
+        })
+      })
+      .then(() => {
+        feedback.style.color = "#10b981";
+        feedback.innerText = "Ad published successfully! Refreshing dashboard...";
+        document.getElementById("adImageUrl").value = "";
+        document.getElementById("adRedirectUrl").value = "";
+        setTimeout(loadDashboardData, 1500);
+      })
+      .catch(err => {
+        feedback.style.color = "#ef4444";
+        feedback.innerText = "Failed to upload ad. Check console.";
+        console.error(err);
+      });
+    });
+  </script>
+</body>
+</html>
