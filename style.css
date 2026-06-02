@@ -446,11 +446,25 @@ h1 {
   border-top: 1px solid var(--border-color);
 }
 
-.stats-section h2 {
+.live-stats-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   font-family: var(--font-title);
   font-size: 32px;
   text-align: center;
   margin-bottom: 40px;
+}
+
+.blink-dot {
+  width: 12px;
+  height: 12px;
+  background-color: var(--accent-mint);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent-mint);
+  animation: pulse 1.5s infinite;
+  display: inline-block;
 }
 
 .stats-grid {

@@ -155,19 +155,38 @@ function setupAppControls() {
 }
 
 // 3. Web UI Stats API (Apps Script)
+function animateValue(id, start, end, duration, suffix = "") {
+  const obj = document.getElementById(id);
+  if (!obj) return;
+  let startTimestamp = null;
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+    const currentValue = Math.floor(progress * (end - start) + start);
+    obj.innerText = currentValue.toLocaleString() + suffix;
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    }
+  };
+  window.requestAnimationFrame(step);
+}
+
 function loadStats() {
+  // Always animate the privacy meter to 100%
+  animateValue("privacyPercent", 0, 100, 1500, "%");
+
   if (APPS_SCRIPT_URL.includes("placeholder")) {
     // Show mock stats if backend is not linked yet
-    document.getElementById("visitorCount").innerText = "1,240";
-    document.getElementById("downloadCount").innerText = "432";
+    animateValue("visitorCount", 0, 1240, 1500);
+    animateValue("downloadCount", 0, 432, 1500);
     return;
   }
 
   fetch(`${APPS_SCRIPT_URL}?action=getStats`)
     .then(res => res.json())
     .then(data => {
-      document.getElementById("visitorCount").innerText = data.visitors.toLocaleString();
-      document.getElementById("downloadCount").innerText = data.downloads.toLocaleString();
+      animateValue("visitorCount", 0, Number(data.visitors) || 0, 1500);
+      animateValue("downloadCount", 0, Number(data.downloads) || 0, 1500);
     })
     .catch(err => {
       console.error("Error loading statistics", err);
