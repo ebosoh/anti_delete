@@ -35,7 +35,7 @@ Write-Host "Compiling resources with aapt2..."
 
 # 3. Link resources and generate base APK
 Write-Host "Linking resources and manifest..."
-& $AAPT2 link --manifest app/src/main/AndroidManifest.xml -I $PLATFORM_JAR -o base.apk compiled_res.zip --java app/src/main/java
+& $AAPT2 link --manifest app/src/main/AndroidManifest.xml -I $PLATFORM_JAR -o base.apk compiled_res.zip --java app/src/main/java --min-sdk-version 21 --target-sdk-version 34
 
 # 4. Compile Java files
 Write-Host "Compiling Java files..."
@@ -49,6 +49,7 @@ $d8Args = @(
     "/c",
     $D8,
     "--lib", $PLATFORM_JAR,
+    "--min-api", "21",
     "--release",
     "--output", "bin"
 ) + $classes
