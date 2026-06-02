@@ -790,6 +790,25 @@ footer {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    padding: 6px 0;
+  }
+  
+  nav {
+    gap: 16px;
+  }
+  
+  .nav-link {
+    font-size: 14px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
   .hero-grid {
     grid-template-columns: 1fr;
     gap: 40px;
