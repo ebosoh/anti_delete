@@ -50,6 +50,15 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webView != null) {
+            webView.evaluateJavascript("javascript:if(typeof checkNotificationPermission === 'function'){checkNotificationPermission();}", null);
+            webView.evaluateJavascript("javascript:if(typeof loadLocalMessages === 'function'){loadLocalMessages();}", null);
+        }
+    }
+
     // Check if notification listener permission is granted
     private boolean isNotificationServiceEnabled() {
         String enabledListeners = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");

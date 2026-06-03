@@ -198,6 +198,26 @@
     <section id="appView" class="view-section hidden">
       <div class="messages-container">
         
+        <!-- Permission Alert Card -->
+        <div id="permissionWarningCard" class="permission-warning-card hidden">
+          <span class="warning-title">🚨 Notification Access Required</span>
+          <p class="warning-descr">antiDELETE needs permission to read WhatsApp notifications to capture and backup deleted chats. Click below to grant access.</p>
+          
+          <details class="app-steps-details">
+            <summary>Getting "Restricted Setting" error?</summary>
+            <ol class="app-steps-list">
+              <li>Open your phone's <strong>Settings</strong> &rarr; <strong>Apps</strong>.</li>
+              <li>Select <strong>antiDELETE</strong>.</li>
+              <li>Tap the <strong>three vertical dots (⋮)</strong> in the top-right corner.</li>
+              <li>Tap <strong>"Allow restricted settings"</strong>.</li>
+              <li>Confirm using your PIN, pattern, or fingerprint.</li>
+              <li>Return here and tap the button below again.</li>
+            </ol>
+          </details>
+          
+          <button id="grantPermissionBtn" class="btn btn-warning">Grant Permission</button>
+        </div>
+
         <div class="search-bar-container">
           <input type="text" id="searchBar" class="search-input" placeholder="Search chats or messages...">
           <button id="refreshBtn" class="btn btn-secondary btn-icon-only">🔄</button>

@@ -100,16 +100,19 @@ function checkNotificationPermission() {
     const hasPermission = AndroidBridge.isNotificationServiceEnabled();
     const indicator = document.querySelector(".status-indicator");
     const statusText = document.querySelector(".status-text");
+    const warningCard = document.getElementById("permissionWarningCard");
     
     if (hasPermission) {
       indicator.style.backgroundColor = "#10B981";
       indicator.style.boxShadow = "0 0 8px #10B981";
       statusText.innerText = "Active";
+      if (warningCard) warningCard.classList.add("hidden");
     } else {
       indicator.style.backgroundColor = "#EF4444";
       indicator.style.boxShadow = "0 0 8px #EF4444";
       statusText.innerText = "Permission Required";
       statusText.style.cursor = "pointer";
+      if (warningCard) warningCard.classList.remove("hidden");
       
       // Let user click to open system settings
       statusText.addEventListener("click", () => {
@@ -120,6 +123,16 @@ function checkNotificationPermission() {
 }
 
 function setupAppControls() {
+  // Grant permission btn
+  const grantBtn = document.getElementById("grantPermissionBtn");
+  if (grantBtn) {
+    grantBtn.addEventListener("click", () => {
+      if (typeof AndroidBridge !== "undefined") {
+        AndroidBridge.openNotificationSettings();
+      }
+    });
+  }
+
   // Search filter
   const searchInput = document.getElementById("searchBar");
   searchInput.addEventListener("input", filterAndRenderMessages);
