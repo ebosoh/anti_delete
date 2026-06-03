@@ -244,7 +244,16 @@ function downloadApk() {
 
 // 4. Advertisement Rotator & Tracking
 function loadAds() {
-  if (APPS_SCRIPT_URL.includes("placeholder")) return;
+  if (APPS_SCRIPT_URL.includes("placeholder")) {
+    // Show a sample placeholder ad so the user can preview the layout
+    const mockAd = {
+      id: "mock-ad-demo",
+      imageUrl: "https://placehold.co/728x90/111827/10b981?text=Grow+Your+Business+With+TechBrain+AI",
+      redirectUrl: "https://www.techbrain.africa"
+    };
+    displayAd(mockAd);
+    return;
+  }
 
   fetch(`${APPS_SCRIPT_URL}?action=getAds`)
     .then(res => res.json())
@@ -267,28 +276,36 @@ function displayAd(ad) {
   img.src = ad.imageUrl;
   link.href = ad.redirectUrl;
   container.classList.remove("hidden");
+  
+  // Add body padding to prevent ad overlapping footer contents
+  document.body.style.paddingBottom = "120px";
 
-  // Track Impression
-  fetch(APPS_SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "trackAdImpression", adId: ad.id })
-  }).catch(err => console.error("Error tracking impression", err));
-
-  // Track Click
-  link.onclick = () => {
+  // Track Impression (only if not a demo ad)
+  if (ad.id !== "mock-ad-demo") {
     fetch(APPS_SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "trackAdClick", adId: ad.id })
-    }).catch(err => console.error("Error tracking click", err));
-  };
+      body: JSON.stringify({ action: "trackAdImpression", adId: ad.id })
+    }).catch(err => console.error("Error tracking impression", err));
+
+    // Track Click
+    link.onclick = () => {
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "trackAdClick", adId: ad.id })
+      }).catch(err => console.error("Error tracking click", err));
+    };
+  } else {
+    link.onclick = null; // Clean handler for preview mode
+  }
 
   // Close ad
   closeBtn.onclick = () => {
     container.classList.add("hidden");
+    document.body.style.paddingBottom = "0px";
   };
 }
 
