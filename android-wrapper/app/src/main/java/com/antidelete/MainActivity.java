@@ -14,8 +14,8 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
     private WebView webView;
-    private DatabaseHelper dbHelper;
-    private static final String WEB_APP_URL = "https://yourusername.github.io/anti_delete/"; // User can update this
+    DatabaseHelper dbHelper;
+    private static final String WEB_APP_URL = "https://ebosoh.github.io/anti_delete/"; // User can update this
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         // Bind JavaScript Interface Bridge
-        webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
+        webView.addJavascriptInterface(new WebAppInterface(this), "AndroidBridge");
 
         // Force opening links inside WebView instead of browser
         webView.setWebViewClient(new WebViewClient());
@@ -86,21 +86,26 @@ public class MainActivity extends Activity {
     }
 
     // JavaScript Bridge implementation
-    public class WebAppInterface {
+    public static class WebAppInterface {
+        private final MainActivity activity;
+
+        public WebAppInterface(MainActivity activity) {
+            this.activity = activity;
+        }
 
         @JavascriptInterface
         public String getMessages() {
-            return dbHelper.getMessagesJson();
+            return activity.dbHelper.getMessagesJson();
         }
 
         @JavascriptInterface
         public boolean isNotificationServiceEnabled() {
-            return MainActivity.this.isNotificationServiceEnabled();
+            return activity.isNotificationServiceEnabled();
         }
 
         @JavascriptInterface
         public void openNotificationSettings() {
-            MainActivity.this.openNotificationSettings();
+            activity.openNotificationSettings();
         }
     }
 }

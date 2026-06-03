@@ -5,7 +5,7 @@ Write-Host "--- Starting manual APK build ---"
 
 # Set temporary environment variables for compiler path discovery
 $CURRENT_DIR = Get-Location
-$env:JAVA_HOME = "$CURRENT_DIR\jdk-17.0.19+10"
+$env:JAVA_HOME = "C:\Users\USER\.antigravity\extensions\redhat.java-1.54.0-win32-x64\jre\21.0.10-win32-x86_64"
 $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 
 # Paths
@@ -18,9 +18,9 @@ $D8 = "$SDK_DIR\build-tools\$BUILD_TOOLS_VERSION\d8.bat"
 $ZIPALIGN = "$SDK_DIR\build-tools\$BUILD_TOOLS_VERSION\zipalign.exe"
 $APKSIGNER = "$SDK_DIR\build-tools\$BUILD_TOOLS_VERSION\apksigner.bat"
 $PLATFORM_JAR = "$SDK_DIR\platforms\$PLATFORM\android.jar"
-$JAVAC = ".\jdk-17.0.19+10\bin\javac.exe"
-$JAR = ".\jdk-17.0.19+10\bin\jar.exe"
-$KEYTOOL = ".\jdk-17.0.19+10\bin\keytool.exe"
+$JAVAC = "$env:JAVA_HOME\bin\javac.exe"
+$JAR = "$env:JAVA_HOME\bin\jar.exe"
+$KEYTOOL = "$env:JAVA_HOME\bin\keytool.exe"
 
 # 1. Clean previous builds
 Write-Host "Cleaning build environment..."
@@ -58,7 +58,7 @@ Start-Process cmd.exe -ArgumentList $d8Args -NoNewWindow -Wait
 # 6. Add classes.dex to base.apk
 Write-Host "Injecting classes.dex into base APK..."
 Push-Location bin
-$JAR_PATH = "..\jdk-17.0.19+10\bin\jar.exe"
+$JAR_PATH = "$env:JAVA_HOME\bin\jar.exe"
 & $JAR_PATH uf ..\base.apk classes.dex
 Pop-Location
 
