@@ -248,8 +248,8 @@ function loadAds() {
     // Show a sample placeholder ad so the user can preview the layout
     const mockAd = {
       id: "mock-ad-demo",
-      imageUrl: "https://placehold.co/728x90/43B02A/ffffff?text=Safaricom+M-PESA++|++Experience+Kenya's+Fastest+5G+Network",
-      redirectUrl: "https://www.safaricom.co.ke"
+      imageUrl: "airtel_money_ad.png",
+      redirectUrl: "https://www.airtel.co.ke"
     };
     displayAd(mockAd);
     return;
