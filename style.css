@@ -152,8 +152,8 @@ nav {
 /* Hero Section */
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 60px;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 40px;
   align-items: center;
   padding: 80px 0;
 }
@@ -295,6 +295,87 @@ h1 {
 .hero-preview {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+
+/* How antiDELETE Works Card */
+.how-it-works-card {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 24px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 30px rgba(16, 185, 129, 0.02);
+  max-width: 320px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.how-it-works-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 40px rgba(16, 185, 129, 0.05);
+}
+
+.how-it-works-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+.how-it-works-card .card-icon {
+  font-size: 24px;
+}
+
+.how-it-works-card h3 {
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.how-it-works-card .card-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.how-it-works-card .step-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.how-it-works-card .step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--accent-mint);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.how-it-works-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.how-it-works-card p strong {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .phone-mockup {
@@ -921,6 +1002,14 @@ footer {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 40px 0;
+  }
+}
+
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
@@ -941,10 +1030,9 @@ footer {
     font-size: 20px;
   }
 
-  .hero-grid {
-    grid-template-columns: 1fr;
-    gap: 40px;
-    padding: 40px 0;
+  .hero-preview {
+    flex-direction: column;
+    gap: 30px;
   }
   
   h1 {
