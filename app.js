@@ -41,9 +41,6 @@ function detectEnvironment() {
     
     // Download APK trigger (Requires M-PESA Payment)
     document.getElementById("downloadApkBtn").addEventListener("click", openPaymentModal);
-    
-    // PWA Install support
-    setupPwaInstallation();
   }
 }
 
@@ -392,32 +389,6 @@ function setupShare() {
         console.error("Failed to copy", err);
       }
     }
-  });
-}
-
-// PWA Install Prompt helper
-function setupPwaInstallation() {
-  let deferredPrompt;
-  const pwaBtn = document.getElementById("pwaInstallBtn");
-
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    pwaBtn.classList.remove("hidden");
-  });
-
-  pwaBtn.addEventListener("click", async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to install prompt: ${outcome}`);
-    deferredPrompt = null;
-    pwaBtn.classList.add("hidden");
-  });
-
-  window.addEventListener("appinstalled", () => {
-    console.log("PWA Installed successfully");
-    pwaBtn.classList.add("hidden");
   });
 }
 
