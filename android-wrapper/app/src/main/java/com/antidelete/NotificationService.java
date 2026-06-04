@@ -9,7 +9,6 @@ import android.util.Log;
 public class NotificationService extends NotificationListenerService {
 
     private static final String TAG = "AntiDeleteService";
-    private static final String WHATSAPP_PKG = "com.whatsapp";
     private DatabaseHelper dbHelper;
 
     @Override
@@ -20,7 +19,17 @@ public class NotificationService extends NotificationListenerService {
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-        if (!WHATSAPP_PKG.equals(sbn.getPackageName())) {
+        String packageName = sbn.getPackageName();
+        if (packageName == null) return;
+
+        boolean isWhatsApp = packageName.equals("com.whatsapp") ||
+                             packageName.equals("com.whatsapp.w4b") ||
+                             packageName.equals("com.gbwhatsapp") ||
+                             packageName.equals("com.fmwhatsapp") ||
+                             packageName.equals("com.yowhatsapp") ||
+                             packageName.equals("com.whatsapp.plus");
+
+        if (!isWhatsApp) {
             return; // Only monitor WhatsApp notifications
         }
 
