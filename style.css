@@ -1423,11 +1423,24 @@ body.apk-mode .messages-list {
 
 .input-hint {
   font-size: 11px;
-  color: var(--text-muted);
+  color: #ef4444;
   margin-top: 6px;
   display: block;
   text-align: left;
   align-self: flex-start;
+  font-weight: 600;
+  animation: pulse-red 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-red {
+  0%, 100% {
+    opacity: 0.6;
+    text-shadow: none;
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+  }
 }
 
 .btn-pay {
