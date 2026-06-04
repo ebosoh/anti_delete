@@ -1,7 +1,7 @@
 // Web and Android Bridge Logic for Anti-Delete App
 
 // Configuration
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqJ3f5r4806a-placeholder/exec"; // Update with actual URL after deploy
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB4XY-xVrQSP-wNDGCyx3nURP5rSrHYufSbqZmtCp6ecOCNe4OW19Rmz_nHLchre4HuQ/exec"; // Update with actual URL after deploy
 
 document.addEventListener("DOMContentLoaded", () => {
   detectEnvironment();
