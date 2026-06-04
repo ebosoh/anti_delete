@@ -1389,10 +1389,12 @@ body.apk-mode .messages-list {
   border-radius: 24px;
   width: 100%;
   max-width: 420px;
+  min-width: 0;
   padding: 36px 30px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 50px rgba(16, 185, 129, 0.08);
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
   animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -1420,6 +1422,13 @@ body.apk-mode .messages-list {
   flex-direction: column;
   align-items: center;
   text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Lipa na M-PESA Brand Header */
@@ -1523,6 +1532,8 @@ body.apk-mode .messages-list {
   font-size: 16px;
   outline: none;
   font-family: var(--font-body);
+  width: 100%;
+  min-width: 0;
 }
 
 .input-hint {
