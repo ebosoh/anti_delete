@@ -283,14 +283,6 @@ function displayAd(ad) {
   img.src = ad.imageUrl;
   link.href = ad.redirectUrl;
   container.classList.remove("hidden");
-  
-  // Add padding to prevent ad overlapping contents
-  if (document.body.classList.contains("apk-mode")) {
-    const msgList = document.getElementById("messagesList");
-    if (msgList) msgList.style.paddingBottom = "110px";
-  } else {
-    document.body.style.paddingBottom = "120px";
-  }
 
   // Track Impression (only if not a demo ad)
   if (ad.id !== "mock-ad-demo") {
@@ -317,12 +309,6 @@ function displayAd(ad) {
   // Close ad
   closeBtn.onclick = () => {
     container.classList.add("hidden");
-    if (document.body.classList.contains("apk-mode")) {
-      const msgList = document.getElementById("messagesList");
-      if (msgList) msgList.style.paddingBottom = "0px";
-    } else {
-      document.body.style.paddingBottom = "0px";
-    }
   };
 }
 
