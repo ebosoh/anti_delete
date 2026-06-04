@@ -283,6 +283,12 @@ function displayAd(ad) {
   img.src = ad.imageUrl;
   link.href = ad.redirectUrl;
   container.classList.remove("hidden");
+  
+  // Add padding to prevent ad overlapping contents (Desktop only, as mobile uses inline/relative flow)
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) {
+    document.body.style.paddingBottom = "120px";
+  }
 
   // Track Impression (only if not a demo ad)
   if (ad.id !== "mock-ad-demo") {
@@ -309,6 +315,7 @@ function displayAd(ad) {
   // Close ad
   closeBtn.onclick = () => {
     container.classList.add("hidden");
+    document.body.style.paddingBottom = "0px";
   };
 }
 
