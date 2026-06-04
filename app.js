@@ -250,8 +250,8 @@ function loadAds() {
     // Show a sample placeholder ad so the user can preview the layout
     const mockAd = {
       id: "mock-ad-demo",
-      imageUrl: "airtel_money_ad.png",
-      redirectUrl: "https://www.airtel.co.ke"
+      imageUrl: "safaricom_ad.png",
+      redirectUrl: "https://www.safaricom.co.ke"
     };
     displayAd(mockAd);
     return;
