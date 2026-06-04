@@ -284,15 +284,12 @@ function displayAd(ad) {
   link.href = ad.redirectUrl;
   container.classList.remove("hidden");
   
-  // Add padding to prevent ad overlapping contents (Mobile only, as desktop uses inline/relative flow)
-  const isMobile = window.innerWidth <= 768;
-  if (isMobile) {
-    if (document.body.classList.contains("apk-mode")) {
-      const msgList = document.getElementById("messagesList");
-      if (msgList) msgList.style.paddingBottom = "110px";
-    } else {
-      document.body.style.paddingBottom = "120px";
-    }
+  // Add padding to prevent ad overlapping contents
+  if (document.body.classList.contains("apk-mode")) {
+    const msgList = document.getElementById("messagesList");
+    if (msgList) msgList.style.paddingBottom = "110px";
+  } else {
+    document.body.style.paddingBottom = "120px";
   }
 
   // Track Impression (only if not a demo ad)
@@ -320,14 +317,11 @@ function displayAd(ad) {
   // Close ad
   closeBtn.onclick = () => {
     container.classList.add("hidden");
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      if (document.body.classList.contains("apk-mode")) {
-        const msgList = document.getElementById("messagesList");
-        if (msgList) msgList.style.paddingBottom = "0px";
-      } else {
-        document.body.style.paddingBottom = "0px";
-      }
+    if (document.body.classList.contains("apk-mode")) {
+      const msgList = document.getElementById("messagesList");
+      if (msgList) msgList.style.paddingBottom = "0px";
+    } else {
+      document.body.style.paddingBottom = "0px";
     }
   };
 }
