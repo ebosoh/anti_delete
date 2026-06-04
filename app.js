@@ -246,14 +246,17 @@ function downloadApk() {
 
 // 4. Advertisement Rotator & Tracking
 function loadAds() {
-  if (APPS_SCRIPT_URL.includes("placeholder")) {
-    // Show a sample placeholder ad so the user can preview the layout
+  const showFallbackAd = () => {
     const mockAd = {
       id: "mock-ad-demo",
       imageUrl: "safaricom_ad.png",
       redirectUrl: "https://www.safaricom.co.ke"
     };
     displayAd(mockAd);
+  };
+
+  if (APPS_SCRIPT_URL.includes("placeholder")) {
+    showFallbackAd();
     return;
   }
 
@@ -264,9 +267,14 @@ function loadAds() {
         // Pick a random ad from active list
         const randomAd = ads[Math.floor(Math.random() * ads.length)];
         displayAd(randomAd);
+      } else {
+        showFallbackAd();
       }
     })
-    .catch(err => console.error("Error loading ads", err));
+    .catch(err => {
+      console.error("Error loading ads", err);
+      showFallbackAd();
+    });
 }
 
 function displayAd(ad) {
