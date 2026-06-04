@@ -155,7 +155,7 @@ nav {
   grid-template-columns: 1fr 1.2fr;
   gap: 40px;
   align-items: center;
-  padding: 80px 0;
+  padding: 30px 0;
 }
 
 .hero-content {
@@ -547,9 +547,23 @@ h1 {
 
 /* Stats Section */
 .stats-section {
-  padding: 60px 0;
+  padding: 30px 0;
   border-top: 1px solid var(--border-color);
 }
+
+.sideload-guide-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 30px;
+}
+
+.sideload-guide-section .play-protect-box {
+  margin: 0;
+  width: 100%;
+  max-width: 600px;
+}
+
 
 .live-stats-title {
   display: flex;
@@ -1230,10 +1244,50 @@ footer {
     padding: 6px 0;
   }
   
-  nav {
-    gap: 16px;
+  #landingView {
+    display: flex;
+    flex-direction: column;
   }
   
+  .hero-grid {
+    display: contents;
+  }
+  
+  .hero-content {
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 0 10px 0;
+  }
+  
+  .hero-content .tagline {
+    align-self: center;
+  }
+  
+  .stats-section {
+    order: 2;
+    padding: 20px 0;
+    border-top: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .hero-preview {
+    order: 3;
+    flex-direction: column;
+    gap: 30px;
+    padding: 20px 0;
+  }
+  
+  .sideload-guide-section {
+    order: 4;
+  }
+  
+  #features {
+    order: 5;
+  }
+
   .nav-link {
     font-size: 14px;
   }
@@ -1242,11 +1296,6 @@ footer {
     font-size: 20px;
   }
 
-  .hero-preview {
-    flex-direction: column;
-    gap: 30px;
-  }
-  
   h1, .promo-text-blink {
     font-size: 38px;
   }
@@ -1691,3 +1740,49 @@ body.apk-mode .messages-list {
   0%, 100% { transform: none; }
   50% { transform: scale3d(1.1, 1.1, 1); }
 }
+
+/* Payment Modal Mobile Optimization */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+  
+  .payment-card {
+    padding: 24px 16px;
+    border-radius: 20px;
+  }
+  
+  .price-tag {
+    padding: 12px 20px;
+    margin-bottom: 20px;
+  }
+  
+  .price-tag .amount {
+    font-size: 32px;
+  }
+  
+  .phone-input-wrapper {
+    height: 44px;
+  }
+  
+  .phone-prefix {
+    padding: 0 10px;
+    font-size: 14px;
+  }
+  
+  .phone-input-wrapper input {
+    padding: 0 10px;
+    font-size: 15px;
+  }
+  
+  .instructions-box {
+    padding: 12px 14px;
+    margin-bottom: 20px;
+  }
+  
+  .instructions-box li {
+    font-size: 12.5px;
+    margin-bottom: 6px;
+  }
+}
+
