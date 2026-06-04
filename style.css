@@ -185,6 +185,30 @@ h1 {
   margin-bottom: 20px;
 }
 
+.promo-text-blink {
+  font-family: var(--font-title);
+  font-size: 54px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -1.5px;
+  color: #F59E0B;
+  margin-top: -10px;
+  margin-bottom: 24px;
+  animation: premium-blink 2s infinite ease-in-out;
+}
+
+@keyframes premium-blink {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.7), 0 0 24px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    opacity: 0.25;
+    text-shadow: none;
+  }
+}
+
+
 .gradient-text {
   background: linear-gradient(135deg, var(--accent-mint), var(--accent-mint-hover));
   -webkit-background-clip: text;
@@ -1223,7 +1247,7 @@ footer {
     gap: 30px;
   }
   
-  h1 {
+  h1, .promo-text-blink {
     font-size: 38px;
   }
   
