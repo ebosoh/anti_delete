@@ -1774,6 +1774,9 @@ body.apk-mode .messages-list {
   
   .phone-input-wrapper {
     height: 44px;
+    max-width: 250px;
+    width: 100%;
+    margin: 0 auto;
   }
   
   .phone-prefix {
@@ -1784,6 +1787,26 @@ body.apk-mode .messages-list {
   .phone-input-wrapper input {
     padding: 0 10px;
     font-size: 15px;
+  }
+
+  .btn-pay {
+    max-width: 250px;
+    width: 100%;
+    margin: 10px auto 0 auto;
+  }
+
+  .form-group label {
+    display: block;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .input-hint {
+    text-align: center;
+    align-self: center;
+    max-width: 250px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .instructions-box {
