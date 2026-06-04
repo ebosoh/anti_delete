@@ -1260,3 +1260,366 @@ body.apk-mode .messages-list {
   max-height: none;
   padding-bottom: 20px;
 }
+
+/* ==================== M-PESA Payment Modal Styles ==================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(4, 8, 18, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.payment-card {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 30px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 50px rgba(16, 185, 129, 0.08);
+  position: relative;
+  overflow: hidden;
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+  padding: 4px;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.payment-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Lipa na M-PESA Brand Header */
+.mpesa-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mpesa-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #43B02A;
+  color: #fff;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(67, 176, 42, 0.4);
+}
+
+.mpesa-brand h3 {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.payment-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.price-tag {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  padding: 16px 28px;
+  border-radius: 16px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.price-tag .currency {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-mint);
+}
+
+.price-tag .amount {
+  font-family: var(--font-title);
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+/* Phone Number Input Custom Wrapper */
+.phone-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  height: 48px;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.phone-input-wrapper:focus-within {
+  border-color: var(--accent-mint);
+  box-shadow: 0 0 0 1px var(--accent-mint-glow);
+}
+
+.phone-prefix {
+  background: rgba(255, 255, 255, 0.03);
+  border-right: 1px solid var(--border-color);
+  padding: 0 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.phone-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 0 16px;
+  font-size: 16px;
+  outline: none;
+  font-family: var(--font-body);
+}
+
+.input-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  display: block;
+  text-align: left;
+  align-self: flex-start;
+}
+
+.btn-pay {
+  width: 100%;
+  height: 50px;
+  margin-top: 10px;
+  font-size: 16px;
+  border-radius: 12px;
+}
+
+.btn-pay:hover .pay-arrow {
+  transform: translateX(4px);
+}
+
+.pay-arrow {
+  transition: transform 0.2s;
+  font-weight: bold;
+}
+
+.secure-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 14px;
+}
+
+/* Spinner Loader & Animations */
+.payment-loader-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-spinner {
+  width: 80px;
+  height: 80px;
+  border: 4px solid rgba(16, 185, 129, 0.1);
+  border-top: 4px solid var(--accent-mint);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  position: absolute;
+}
+
+.payment-pulse-dot {
+  width: 20px;
+  height: 20px;
+  background-color: var(--accent-mint);
+  border-radius: 50%;
+  box-shadow: 0 0 15px var(--accent-mint);
+  animation: pulse 1.5s infinite;
+}
+
+.processing-msg {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.instructions-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px 20px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.instructions-box ol {
+  text-align: left;
+  padding-left: 20px;
+}
+
+.instructions-box li {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.instructions-box li:last-child {
+  margin-bottom: 0;
+}
+
+.polling-status {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Success Checkmark Animation */
+.success-icon-container {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 24px;
+}
+
+.success-checkmark {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: var(--accent-mint);
+  stroke-miterlimit: 10;
+  box-shadow: inset 0px 0px 0px var(--accent-mint);
+  animation: fillSuccess .4s ease-in-out .4s forwards, scaleSuccess .3s ease-in-out .9s both;
+  margin: 0 auto;
+}
+
+.success-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke: var(--accent-mint);
+  fill: none;
+  animation: strokeSuccess 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.success-check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: strokeSuccess 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+.success-title {
+  font-family: var(--font-title);
+  font-size: 24px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.success-desc {
+  font-size: 14.5px;
+  color: var(--text-secondary);
+  margin-bottom: 28px;
+}
+
+/* Error View styling */
+.error-icon-container {
+  font-size: 50px;
+  width: 80px;
+  height: 80px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.error-title {
+  font-family: var(--font-title);
+  font-size: 24px;
+  color: #EF4444;
+  margin-bottom: 8px;
+}
+
+.error-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 28px;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes strokeSuccess {
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes fillSuccess {
+  100% { box-shadow: inset 0px 0px 0px 40px rgba(16, 185, 129, 0.05); }
+}
+
+@keyframes scaleSuccess {
+  0%, 100% { transform: none; }
+  50% { transform: scale3d(1.1, 1.1, 1); }
+}

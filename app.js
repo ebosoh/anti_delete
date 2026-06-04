@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initDemo();
   loadAds();
   setupShare();
+  initPaymentFlow();
 });
 
 // 1. Detect if inside APK or Browser
@@ -38,8 +39,8 @@ function detectEnvironment() {
     trackVisit();
     loadStats();
     
-    // Download APK trigger
-    document.getElementById("downloadApkBtn").addEventListener("click", downloadApk);
+    // Download APK trigger (Requires M-PESA Payment)
+    document.getElementById("downloadApkBtn").addEventListener("click", openPaymentModal);
     
     // PWA Install support
     setupPwaInstallation();
@@ -421,4 +422,187 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+// 7. M-PESA STK Push Payment Flow
+let paymentPollInterval = null;
+let paymentTimeoutTimer = null;
+let currentCheckoutRequestId = null;
+
+function initPaymentFlow() {
+  const modal = document.getElementById("paymentModal");
+  if (!modal) return;
+
+  // Bind close buttons
+  document.getElementById("closePaymentBtn").addEventListener("click", closePaymentModal);
+  document.getElementById("closeSuccessBtn").addEventListener("click", closePaymentModal);
+  
+  // Pay Now button click
+  document.getElementById("payNowBtn").addEventListener("click", handlePayClick);
+  
+  // Retry buttons
+  document.getElementById("retryPaymentBtn").addEventListener("click", () => {
+    showPaymentStep("input");
+  });
+
+  // Numeric phone field validation (only numbers)
+  const phoneInput = document.getElementById("mpesaPhone");
+  phoneInput.addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+  });
+}
+
+function openPaymentModal() {
+  const modal = document.getElementById("paymentModal");
+  modal.classList.remove("hidden");
+  showPaymentStep("input");
+  
+  // Reset input field
+  document.getElementById("mpesaPhone").value = "";
+}
+
+function closePaymentModal() {
+  const modal = document.getElementById("paymentModal");
+  modal.classList.add("hidden");
+  
+  // Clear any active polling loops
+  clearInterval(paymentPollInterval);
+  clearTimeout(paymentTimeoutTimer);
+}
+
+function showPaymentStep(step) {
+  // Hide all steps
+  document.getElementById("paymentInputStep").classList.add("hidden");
+  document.getElementById("paymentProcessStep").classList.add("hidden");
+  document.getElementById("paymentSuccessStep").classList.add("hidden");
+  document.getElementById("paymentErrorStep").classList.add("hidden");
+
+  // Show requested step
+  if (step === "input") {
+    document.getElementById("paymentInputStep").classList.remove("hidden");
+  } else if (step === "process") {
+    document.getElementById("paymentProcessStep").classList.remove("hidden");
+  } else if (step === "success") {
+    document.getElementById("paymentSuccessStep").classList.remove("hidden");
+  } else if (step === "error") {
+    document.getElementById("paymentErrorStep").classList.remove("hidden");
+  }
+}
+
+function handlePayClick() {
+  const phoneInput = document.getElementById("mpesaPhone").value.trim();
+  
+  // Basic validation: must be 9 digits (excluding +254 or 0 prefix)
+  if (phoneInput.length !== 9 || !["7", "1"].includes(phoneInput[0])) {
+    alert("Please enter a valid Safaricom phone number (e.g. 708374149 or 112345678).");
+    return;
+  }
+
+  // Format to standard 2547xxxxxxxx or 2541xxxxxxxx format
+  const formattedPhone = "254" + phoneInput;
+  
+  showPaymentStep("process");
+  
+  // Setup timeout timer countdown (45 seconds)
+  let timeLeft = 45;
+  const timerSpan = document.getElementById("paymentTimer");
+  timerSpan.innerText = timeLeft;
+  
+  const countdownInterval = setInterval(() => {
+    timeLeft--;
+    timerSpan.innerText = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+
+  // Trigger payment API call
+  initiateMpesaPush(formattedPhone, countdownInterval);
+}
+
+function initiateMpesaPush(phoneNumber, countdownInterval) {
+  // 1. Demo Mode
+  if (APPS_SCRIPT_URL.includes("placeholder")) {
+    console.log("Demo Mode: Simulating Safaricom STK Push payment for phone:", phoneNumber);
+    
+    // Simulate STK pop-up wait time of 4 seconds
+    paymentTimeoutTimer = setTimeout(() => {
+      clearInterval(countdownInterval);
+      showPaymentStep("success");
+      
+      // Start APK download
+      downloadApk();
+    }, 4500);
+    return;
+  }
+
+  // 2. Real Mode (Production / Sandbox API Integration)
+  const payBtn = document.getElementById("payNowBtn");
+  payBtn.disabled = true;
+  payBtn.innerText = "Initiating push...";
+
+  fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "initiatePayment",
+      phoneNumber: phoneNumber,
+      amount: "100"
+    })
+  })
+  .then(() => {
+    payBtn.disabled = false;
+    payBtn.innerHTML = `<span>Pay KES 100</span><span class="pay-arrow">&rarr;</span>`;
+    
+    // Start polling the server for the latest transaction status for this phone number
+    startPaymentStatusPolling(phoneNumber, countdownInterval);
+  })
+  .catch(err => {
+    clearInterval(countdownInterval);
+    payBtn.disabled = false;
+    payBtn.innerHTML = `<span>Pay KES 100</span><span class="pay-arrow">&rarr;</span>`;
+    showPaymentStep("error");
+    document.getElementById("paymentErrorMsg").innerText = "Failed to connect to M-PESA service. Check your internet connection.";
+    console.error("M-PESA Error:", err);
+  });
+}
+
+function startPaymentStatusPolling(phoneNumber, countdownInterval) {
+  const startTime = new Date().getTime();
+  
+  paymentPollInterval = setInterval(() => {
+    const elapsed = new Date().getTime() - startTime;
+    
+    // Safety check: Timeout after 45 seconds
+    if (elapsed > 45000) {
+      clearInterval(paymentPollInterval);
+      clearInterval(countdownInterval);
+      showPaymentStep("error");
+      document.getElementById("paymentErrorMsg").innerText = "Payment timed out. You took too long to enter your PIN or the prompt didn't appear. Please try again.";
+      return;
+    }
+
+    // Call check payment endpoint
+    fetch(`${APPS_SCRIPT_URL}?action=checkPaymentStatus&phoneNumber=${phoneNumber}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "Completed") {
+          clearInterval(paymentPollInterval);
+          clearInterval(countdownInterval);
+          showPaymentStep("success");
+          
+          // Trigger APK download
+          downloadApk();
+        } else if (data.status === "Failed") {
+          clearInterval(paymentPollInterval);
+          clearInterval(countdownInterval);
+          showPaymentStep("error");
+          document.getElementById("paymentErrorMsg").innerText = data.message || "Payment cancelled or rejected by user. Please try again.";
+        }
+      })
+      .catch(err => {
+        console.warn("Polling error (retrying):", err);
+      });
+  }, 3000);
 }

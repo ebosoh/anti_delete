@@ -340,6 +340,83 @@
     </div>
   </footer>
 
+  <!-- M-PESA Payment Modal -->
+  <div id="paymentModal" class="modal-overlay hidden">
+    <div class="payment-card">
+      <button id="closePaymentBtn" class="modal-close-btn">&times;</button>
+      
+      <!-- Step 1: Input Details -->
+      <div id="paymentInputStep" class="payment-step">
+        <div class="mpesa-brand">
+          <span class="mpesa-logo">M</span>
+          <h3>Lipa na M-PESA</h3>
+        </div>
+        <p class="payment-subtitle">Download <strong>antiDELETE Pro APK</strong> for your phone.</p>
+        
+        <div class="price-tag">
+          <span class="currency">KES</span>
+          <span class="amount">100</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="mpesaPhone">Safaricom Phone Number</label>
+          <div class="phone-input-wrapper">
+            <span class="phone-prefix">+254</span>
+            <input type="tel" id="mpesaPhone" class="form-input" placeholder="708374149" maxlength="9">
+          </div>
+          <span class="input-hint">Enter your number without the leading 0 (e.g. 708374149)</span>
+        </div>
+
+        <button id="payNowBtn" class="btn btn-primary btn-pay">
+          <span>Pay KES 100</span>
+          <span class="pay-arrow">&rarr;</span>
+        </button>
+        <p class="secure-note">🔒 Encrypted on-device checkout via Daraja API</p>
+      </div>
+
+      <!-- Step 2: Processing Payment / Waiting for PIN -->
+      <div id="paymentProcessStep" class="payment-step hidden">
+        <div class="payment-loader-container">
+          <div class="payment-spinner"></div>
+          <div class="payment-pulse-dot"></div>
+        </div>
+        <h3>Check Your Phone!</h3>
+        <p class="processing-msg">We've sent an M-PESA STK prompt to your phone.</p>
+        <div class="instructions-box">
+          <ol>
+            <li>Unlock your phone screen.</li>
+            <li>Enter your <strong>M-PESA PIN</strong> when prompted.</li>
+            <li>Confirm the payment of <strong>KES 100</strong> to <strong>antiDELETE</strong>.</li>
+          </ol>
+        </div>
+        <p class="polling-status">Waiting for confirmation... <span id="paymentTimer">45</span>s</p>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div id="paymentSuccessStep" class="payment-step hidden">
+        <div class="success-icon-container">
+          <div class="success-checkmark">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <circle class="success-circle" cx="26" cy="26" r="25" fill="none"/>
+              <path class="success-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="success-title">Payment Confirmed!</h3>
+        <p class="success-desc">Thank you for your purchase. Your download has started automatically.</p>
+        <button id="closeSuccessBtn" class="btn btn-primary" style="width: 100%;">Close</button>
+      </div>
+
+      <!-- Step 4: Error -->
+      <div id="paymentErrorStep" class="payment-step hidden">
+        <div class="error-icon-container">❌</div>
+        <h3 class="error-title">Payment Failed</h3>
+        <p id="paymentErrorMsg" class="error-desc">The request was cancelled or timed out. Please try again.</p>
+        <button id="retryPaymentBtn" class="btn btn-secondary" style="width: 100%;">Try Again</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
