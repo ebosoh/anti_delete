@@ -846,12 +846,10 @@ h1 {
 
 /* Ad Space Banner */
 .ad-container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -1312,13 +1310,13 @@ footer {
     text-align: center;
   }
   
-  /* Make ad container static (relative flow) on mobile only */
+  /* Make ad container fixed (always stay at the bottom) on mobile only */
   .ad-container {
-    position: relative;
-    bottom: auto;
-    left: auto;
-    right: auto;
-    border-bottom: 1px solid var(--border-color);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-bottom: none;
   }
 }
 
