@@ -556,12 +556,12 @@ function initiateMpesaPush(phoneNumber, countdownInterval) {
     body: JSON.stringify({
       action: "initiatePayment",
       phoneNumber: phoneNumber,
-      amount: "300"
+      amount: "100"
     })
   })
   .then(() => {
     payBtn.disabled = false;
-    payBtn.innerHTML = `<span>Pay KES 300</span><span class="pay-arrow">&rarr;</span>`;
+    payBtn.innerHTML = `<span>Pay KES 100</span><span class="pay-arrow">&rarr;</span>`;
     
     // Start polling the server for the latest transaction status for this phone number
     startPaymentStatusPolling(phoneNumber, countdownInterval);
@@ -569,7 +569,7 @@ function initiateMpesaPush(phoneNumber, countdownInterval) {
   .catch(err => {
     clearInterval(countdownInterval);
     payBtn.disabled = false;
-    payBtn.innerHTML = `<span>Pay KES 300</span><span class="pay-arrow">&rarr;</span>`;
+    payBtn.innerHTML = `<span>Pay KES 100</span><span class="pay-arrow">&rarr;</span>`;
     showPaymentStep("error");
     document.getElementById("paymentErrorMsg").innerText = "Failed to connect to M-PESA service. Check your internet connection.";
     console.error("M-PESA Error:", err);
