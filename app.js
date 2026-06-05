@@ -29,6 +29,9 @@ function detectEnvironment() {
     
     // Check permission status
     checkNotificationPermission();
+
+    // Check for app updates
+    checkForUpdates();
   } else {
     // Standard web browser landing page
     document.getElementById("landingView").classList.remove("hidden");
@@ -118,6 +121,43 @@ function checkNotificationPermission() {
         AndroidBridge.openNotificationSettings();
       });
     }
+  }
+}
+
+function checkForUpdates() {
+  if (typeof AndroidBridge === "undefined") return;
+
+  try {
+    const currentVersionCode = AndroidBridge.getVersionCode();
+    
+    // Fetch version metadata
+    fetch("version.json?t=" + new Date().getTime())
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.versionCode > currentVersionCode) {
+          const updateCard = document.getElementById("updateAppCard");
+          const updateVer = document.getElementById("updateVersionName");
+          const updateBtn = document.getElementById("updateNowBtn");
+          
+          if (updateCard && updateVer && updateBtn) {
+            updateVer.innerText = data.versionName;
+            updateCard.classList.remove("hidden");
+            
+            updateBtn.onclick = () => {
+              // Direct user to download and trigger APK update installation
+              const link = document.createElement("a");
+              link.href = data.apkUrl;
+              link.download = "antidelete.apk";
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            };
+          }
+        }
+      })
+      .catch(err => console.error("Error checking for updates:", err));
+  } catch (error) {
+    console.error("Failed update checking:", error);
   }
 }
 

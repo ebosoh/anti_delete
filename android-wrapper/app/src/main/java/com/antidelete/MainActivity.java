@@ -107,5 +107,23 @@ public class MainActivity extends Activity {
         public void openNotificationSettings() {
             activity.openNotificationSettings();
         }
+
+        @JavascriptInterface
+        public int getVersionCode() {
+            try {
+                return activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionCode;
+            } catch (Exception e) {
+                return 1;
+            }
+        }
+
+        @JavascriptInterface
+        public String getVersionName() {
+            try {
+                return activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
+            } catch (Exception e) {
+                return "1.00";
+            }
+        }
     }
 }
