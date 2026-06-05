@@ -40,6 +40,9 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
 
+        // Disable remote debugging in production (security hardening)
+        WebView.setWebContentsDebuggingEnabled(false);
+
         // Load the web application hosted on GitHub Pages
         webView.loadUrl(WEB_APP_URL);
 
@@ -123,6 +126,22 @@ public class MainActivity extends Activity {
                 return activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName;
             } catch (Exception e) {
                 return "1.00";
+            }
+        }
+
+        /**
+         * Returns the device's unique ANDROID_ID for license binding.
+         * This ID is stable across reboots but changes on factory reset.
+         */
+        @JavascriptInterface
+        public String getDeviceId() {
+            try {
+                return Settings.Secure.getString(
+                    activity.getContentResolver(),
+                    Settings.Secure.ANDROID_ID
+                );
+            } catch (Exception e) {
+                return "unknown_" + android.os.Build.SERIAL;
             }
         }
     }

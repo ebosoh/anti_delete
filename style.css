@@ -1877,3 +1877,219 @@ body.apk-mode .messages-list {
   }
 }
 
+
+/* ==================== ACTIVATION REQUIRED SCREEN ==================== */
+
+.activation-container {
+  max-width: 420px;
+  margin: 40px auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 32px 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: slideInUp 0.4s ease;
+}
+
+.activation-icon {
+  font-size: 56px;
+  animation: pulse 2s infinite;
+}
+
+.activation-title {
+  font-family: var(--font-title);
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+}
+
+.activation-reason {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Device ID card */
+.device-id-card {
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.device-id-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.device-id-value-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.device-id-value {
+  flex: 1;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--accent-mint);
+  word-break: break-all;
+  background: none;
+}
+
+.copy-btn {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--accent-mint);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.copy-btn:hover {
+  background: rgba(16, 185, 129, 0.2);
+  transform: translateY(-1px);
+}
+
+.device-id-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Activation Tabs */
+.activation-tabs {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  background: var(--bg-primary);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.act-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.act-tab:hover {
+  color: var(--text-primary);
+}
+
+.act-tab.active {
+  background: var(--accent-mint);
+  color: #000;
+}
+
+/* Tab content panels */
+.activation-tab-content {
+  width: 100%;
+  animation: slideInUp 0.25s ease;
+}
+
+.tab-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+/* Large monospace code input */
+.activation-code-input {
+  width: 100%;
+  text-transform: uppercase;
+  text-align: center;
+  font-size: 24px !important;
+  letter-spacing: 6px;
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--accent-mint) !important;
+  box-sizing: border-box;
+}
+
+.activation-code-input::placeholder {
+  color: var(--text-muted);
+  font-size: 20px;
+  letter-spacing: 4px;
+}
+
+/* Support link */
+.support-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: #25d366; /* WhatsApp green */
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+
+.support-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* APK mode: Activation view fills screen */
+body.apk-mode #activationView {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+
+body.apk-mode .activation-container {
+  margin: 20px auto;
+}
+
+/* Success Toast notification */
+.activation-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  color: #000;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 14px 28px;
+  border-radius: 50px;
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
+  z-index: 9999;
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.activation-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}

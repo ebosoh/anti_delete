@@ -19,29 +19,26 @@ function detectEnvironment() {
     // Running inside Android Wrapper WebView
     document.body.classList.add("apk-mode");
     document.getElementById("landingView").classList.add("hidden");
-    document.getElementById("appView").classList.remove("hidden");
+    document.getElementById("appView").classList.add("hidden");     // Hidden until license is verified
+    document.getElementById("activationView").classList.add("hidden"); // Hidden until needed
     document.getElementById("serviceStatus").classList.remove("hidden");
     document.querySelectorAll(".web-only").forEach(el => el.classList.add("hidden"));
-    
-    // Load local messages
-    loadLocalMessages();
-    setupAppControls();
-    
-    // Check permission status
-    checkNotificationPermission();
 
     // Check for app updates
     checkForUpdates();
+
+    // Run license verification before showing anything
+    verifyOrRegisterLicense();
   } else {
     // Standard web browser landing page
     document.getElementById("landingView").classList.remove("hidden");
     document.getElementById("appView").classList.add("hidden");
     document.getElementById("serviceStatus").classList.add("hidden");
-    
+
     // Load and increment stats
     trackVisit();
     loadStats();
-    
+
     // Download APK trigger (Requires M-PESA Payment)
     document.getElementById("downloadApkBtn").addEventListener("click", openPaymentModal);
   }
@@ -624,4 +621,210 @@ function startPaymentStatusPolling(phoneNumber, countdownInterval) {
         console.warn("Polling error (retrying):", err);
       });
   }, 3000);
+}
+
+// ==================== 8. LICENSE VERIFICATION SYSTEM ====================
+
+/**
+ * Master license gatekeeper — called on every APK launch.
+ * Checks if this device has a valid license before revealing the app.
+ */
+async function verifyOrRegisterLicense() {
+  const deviceId = (typeof AndroidBridge !== "undefined" && AndroidBridge.getDeviceId)
+    ? AndroidBridge.getDeviceId()
+    : null;
+
+  if (!deviceId) {
+    // AndroidBridge doesn't support getDeviceId yet — degrade gracefully
+    console.warn("getDeviceId() not available. Allowing access.");
+    unlockApp();
+    return;
+  }
+
+  // Store deviceId for later use in activation
+  window._deviceId = deviceId;
+
+  // Update WhatsApp support link with device ID pre-filled
+  const waLink = document.getElementById("whatsappSupportLink");
+  if (waLink) {
+    waLink.href = `https://wa.me/254780010010?text=Hi%2C%20my%20antiDELETE%20app%20needs%20activation.%20My%20Device%20ID%20is%3A%20${encodeURIComponent(deviceId)}`;
+  }
+
+  try {
+    const response = await fetch(`${APPS_SCRIPT_URL}?action=checkLicense&deviceId=${encodeURIComponent(deviceId)}`);
+    const data = await response.json();
+
+    if (data.valid) {
+      // Valid license — clear offline grace counter and show app
+      localStorage.setItem("ad_offline_grace", "0");
+      unlockApp();
+    } else {
+      // Not licensed — show activation screen
+      showActivationScreen(deviceId, data.reason);
+    }
+  } catch (err) {
+    // Network error — apply a 3-launch grace period to avoid locking out users mid-trip
+    console.error("License check failed (network):", err);
+    const grace = parseInt(localStorage.getItem("ad_offline_grace") || "0");
+    if (grace < 3) {
+      localStorage.setItem("ad_offline_grace", (grace + 1).toString());
+      console.warn(`Offline grace launch ${grace + 1}/3 — allowing access.`);
+      unlockApp();
+    } else {
+      showActivationScreen(deviceId, "offline");
+    }
+  }
+}
+
+/** Shows the main messages view and initialises all app controls. */
+function unlockApp() {
+  document.getElementById("activationView").classList.add("hidden");
+  document.getElementById("appView").classList.remove("hidden");
+  loadLocalMessages();
+  setupAppControls();
+  checkNotificationPermission();
+}
+
+/** Renders the Activation Required screen and wires up both activation tabs. */
+function showActivationScreen(deviceId, reason) {
+  document.getElementById("appView").classList.add("hidden");
+  document.getElementById("activationView").classList.remove("hidden");
+
+  // Display device ID so the admin can register it
+  const deviceIdEl = document.getElementById("displayDeviceId");
+  if (deviceIdEl) deviceIdEl.textContent = deviceId || "Unknown";
+
+  // Show a contextual reason message
+  const reasonEl = document.getElementById("activationReason");
+  if (reasonEl) {
+    const messages = {
+      revoked:      "⛔ Your license has been revoked. Please contact your agent.",
+      expired:      "⏳ Your license has expired. Please contact your agent to renew.",
+      offline:      "📡 Cannot verify license. Connect to the internet and relaunch the app.",
+      not_found:    "🔐 This device is not activated. Enter your code or verify your M-PESA payment.",
+      no_device_id: "⚠️ Could not read device ID. Please reinstall the app."
+    };
+    reasonEl.textContent = messages[reason] || messages["not_found"];
+  }
+
+  // Wire up offline tab: Activation Code
+  document.getElementById("submitCodeBtn").onclick = () => {
+    const code = document.getElementById("activationCodeInput").value;
+    submitActivationCode(deviceId, code);
+  };
+  // Auto-format input as user types (insert dashes)
+  const codeInput = document.getElementById("activationCodeInput");
+  codeInput.addEventListener("input", (e) => {
+    let v = e.target.value.toUpperCase().replace(/[^A-Z2-9]/g, "");
+    if (v.length > 3)  v = v.slice(0, 3) + "-" + v.slice(3);
+    if (v.length > 7)  v = v.slice(0, 7) + "-" + v.slice(7);
+    e.target.value = v.slice(0, 11);
+  });
+
+  // Wire up online tab: M-PESA phone verification
+  document.getElementById("verifyOnlinePaymentBtn").onclick = () => {
+    const phone = document.getElementById("onlinePaymentPhone").value.trim();
+    submitOnlineActivation(deviceId, phone);
+  };
+  document.getElementById("onlinePaymentPhone").addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+  });
+}
+
+/** Validates the offline activation code against the backend. */
+async function submitActivationCode(deviceId, code) {
+  if (!code || code.replace(/-/g, "").length < 9) {
+    alert("Please enter the full 9-character activation code (e.g. ABC-DEF-GH2).");
+    return;
+  }
+  const btn = document.getElementById("submitCodeBtn");
+  btn.disabled = true;
+  btn.textContent = "Validating...";
+
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "validateOfflineCode", deviceId, code })
+    });
+    const data = await response.json();
+    if (data.success) {
+      localStorage.setItem("ad_offline_grace", "0");
+      showActivationSuccessToast();
+      unlockApp();
+    } else {
+      alert("❌ " + (data.error || "Invalid code. Please try again."));
+    }
+  } catch (err) {
+    alert("📡 Network error. Please check your internet connection and try again.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Activate";
+  }
+}
+
+/** Verifies an online M-PESA payment and registers the device license. */
+async function submitOnlineActivation(deviceId, phoneInput) {
+  if (!phoneInput || phoneInput.length < 9) {
+    alert("Please enter the 9-digit Safaricom number you used to pay (e.g. 708374149).");
+    return;
+  }
+  const formattedPhone = "254" + phoneInput.replace(/^0+/, "").replace(/^254/, "");
+  const btn = document.getElementById("verifyOnlinePaymentBtn");
+  btn.disabled = true;
+  btn.textContent = "Verifying...";
+
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "registerOnlineLicense", deviceId, phoneNumber: formattedPhone })
+    });
+    const data = await response.json();
+    if (data.success) {
+      localStorage.setItem("ad_offline_grace", "0");
+      showActivationSuccessToast();
+      unlockApp();
+    } else {
+      alert("❌ " + (data.error || "Could not verify payment. Please contact support."));
+    }
+  } catch (err) {
+    alert("📡 Network error. Please check your internet connection and try again.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Verify Payment";
+  }
+}
+
+/** Copies the device ID to clipboard with user feedback. */
+function copyDeviceId() {
+  const id = document.getElementById("displayDeviceId").textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(id).then(() => {
+      const btn = document.querySelector(".copy-btn");
+      btn.textContent = "✅ Copied!";
+      setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+    });
+  } else {
+    alert("Device ID: " + id);
+  }
+}
+
+/** Switches between the two activation tabs (offline code / online payment). */
+function switchActivationTab(tab, el) {
+  document.querySelectorAll(".act-tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("offlineActivationTab").classList.add("hidden");
+  document.getElementById("onlineActivationTab").classList.add("hidden");
+  document.getElementById(tab + "ActivationTab").classList.remove("hidden");
+}
+
+/** Brief toast shown after successful activation. */
+function showActivationSuccessToast() {
+  const toast = document.createElement("div");
+  toast.className = "activation-toast";
+  toast.innerHTML = "🎉 Device activated successfully!";
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add("show"), 50);
+  setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
 }

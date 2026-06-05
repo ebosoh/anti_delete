@@ -271,6 +271,56 @@
       </div>
     </section>
 
+    <!-- ==================== ACTIVATION REQUIRED VIEW (Inside APK, Unlicensed) ==================== -->
+    <section id="activationView" class="view-section hidden">
+      <div class="activation-container">
+        <div class="activation-icon">🔐</div>
+        <h2 class="activation-title">Activation Required</h2>
+        <p id="activationReason" class="activation-reason">🔐 This device is not activated. Enter your code or verify your M-PESA payment.</p>
+
+        <!-- Device ID Card -->
+        <div class="device-id-card">
+          <span class="device-id-label">Your Device ID</span>
+          <div class="device-id-value-row">
+            <code id="displayDeviceId" class="device-id-value">Loading...</code>
+            <button onclick="copyDeviceId()" class="copy-btn" id="copyDeviceIdBtn">📋 Copy</button>
+          </div>
+          <p class="device-id-hint">📤 Share this ID with your agent to get your activation code.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="activation-tabs">
+          <button class="act-tab active" id="tabOffline" onclick="switchActivationTab('offline', this)">🔑 Have a Code?</button>
+          <button class="act-tab" id="tabOnline" onclick="switchActivationTab('online', this)">💳 Paid Online?</button>
+        </div>
+
+        <!-- Tab Content: Offline — Enter Activation Code -->
+        <div id="offlineActivationTab" class="activation-tab-content">
+          <p class="tab-desc">Enter the activation code provided by your agent after payment:</p>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <input type="text" id="activationCodeInput" class="form-input activation-code-input"
+              placeholder="ABC-DEF-GH2" maxlength="11" autocomplete="off" spellcheck="false">
+          </div>
+          <button id="submitCodeBtn" class="btn btn-primary" style="width: 100%;">Activate Device</button>
+        </div>
+
+        <!-- Tab Content: Online — Verify M-PESA Payment -->
+        <div id="onlineActivationTab" class="activation-tab-content hidden">
+          <p class="tab-desc">Enter the Safaricom number you used to pay on our website:</p>
+          <div class="phone-input-wrapper" style="margin-bottom: 16px;">
+            <span class="phone-prefix">+254</span>
+            <input type="tel" id="onlinePaymentPhone" class="form-input" placeholder="708374149" maxlength="9">
+          </div>
+          <button id="verifyOnlinePaymentBtn" class="btn btn-primary" style="width: 100%;">Verify M-PESA Payment</button>
+        </div>
+
+        <!-- WhatsApp Support -->
+        <a href="https://wa.me/254780010010" id="whatsappSupportLink" class="support-link" target="_blank">
+          💬 WhatsApp Support
+        </a>
+      </div>
+    </section>
+
   </main>
 
   <!-- Banner Ads Space -->

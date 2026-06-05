@@ -3,6 +3,10 @@
 
 const SPREADSHEET_ID = ""; // Leave blank to bind to the active spreadsheet, or set a specific ID
 
+// -------------------- ADMIN CREDENTIALS --------------------
+const ADMIN_PASSWORD = "Adm!n_TBr@1n26"; // Upgraded from admin123 — keep this secret
+const ADMIN_SECRET   = "xK9m_antidel_2026_s3cr3t"; // HMAC key used to generate activation codes
+
 // Safaricom M-PESA Daraja API Credentials
 const MPESA_ENV = "sandbox"; // Change to 'production' when going live
 const MPESA_CONSUMER_KEY = "YOUR_CONSUMER_KEY"; // Update with actual keys
@@ -28,6 +32,18 @@ function doGet(e) {
       const phoneNumber = e.parameter.phoneNumber;
       const checkoutRequestId = e.parameter.checkoutRequestId;
       return jsonResponse(checkTransactionStatus(sheet, phoneNumber, checkoutRequestId));
+    }
+
+    // ---- LICENSE ACTIONS (GET) ----
+    if (action === "checkLicense") {
+      const deviceId = e.parameter.deviceId;
+      return jsonResponse(checkLicenseStatus(sheet, deviceId));
+    }
+
+    if (action === "getLicenses") {
+      const password = e.parameter.password;
+      if (password !== ADMIN_PASSWORD) return jsonResponse({ error: "Unauthorized" });
+      return jsonResponse(getAllLicenses(sheet));
     }
 
     return jsonResponse({ error: "Invalid action" });
@@ -75,7 +91,7 @@ function doPost(e) {
     if (action === "uploadAd") {
       // Basic security check: verify password
       const password = postData.password;
-      if (password !== "admin123") {
+      if (password !== ADMIN_PASSWORD) {
         return jsonResponse({ error: "Unauthorized" });
       }
 
@@ -99,6 +115,27 @@ function doPost(e) {
       const adId = postData.adId;
       incrementAdMetric(sheet, adId, 5); // Column 5 is Clicks (E)
       return jsonResponse({ success: true });
+    }
+
+    // ---- LICENSE ACTIONS (POST) ----
+    if (action === "registerOnlineLicense") {
+      const deviceId  = postData.deviceId;
+      const phoneNumber = postData.phoneNumber;
+      return jsonResponse(registerOnlineLicense(sheet, deviceId, phoneNumber));
+    }
+
+    if (action === "generateOfflineLicense") {
+      if (postData.password !== ADMIN_PASSWORD) return jsonResponse({ error: "Unauthorized" });
+      return jsonResponse(generateOfflineLicense(sheet, postData.deviceId, postData.phoneNumber, postData.amount, postData.notes));
+    }
+
+    if (action === "validateOfflineCode") {
+      return jsonResponse(validateOfflineCode(sheet, postData.deviceId, postData.code));
+    }
+
+    if (action === "revokeLicense") {
+      if (postData.password !== ADMIN_PASSWORD) return jsonResponse({ error: "Unauthorized" });
+      return jsonResponse(revokeLicense(sheet, postData.deviceId));
     }
 
     return jsonResponse({ error: "Invalid action" });
@@ -369,4 +406,197 @@ function incrementAdMetric(spreadsheet, adId, colIndex) {
 function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ==================== LICENSE MANAGEMENT ====================
+
+/**
+ * Creates or returns the "Licenses" sheet with proper headers.
+ * Columns: DeviceID | PhoneNumber | ActivationCode | LicenseType | Status | ExpiryDate | DateCreated | Notes
+ */
+function getOrCreateLicensesSheet(spreadsheet) {
+  let sheet = spreadsheet.getSheetByName("Licenses");
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet("Licenses");
+    sheet.appendRow(["DeviceID", "PhoneNumber", "ActivationCode", "LicenseType", "Status", "ExpiryDate", "DateCreated", "Notes"]);
+  }
+  return sheet;
+}
+
+/**
+ * Generates a deterministic 9-character activation code (XXX-XXX-XXX) for a device.
+ * Uses HMAC-SHA256 with the ADMIN_SECRET key — same deviceId always yields the same code.
+ */
+function generateActivationCode(deviceId) {
+  const key  = Utilities.newBlob(ADMIN_SECRET).getBytes();
+  const data = Utilities.newBlob(deviceId).getBytes();
+  const sig  = Utilities.computeHmacSha256Signature(data, key);
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No ambiguous chars (0/O, 1/I)
+  let result = "";
+  for (let i = 0; i < 9; i++) {
+    const b = sig[i] < 0 ? sig[i] + 256 : sig[i];
+    result += chars[b % chars.length];
+  }
+  return result.slice(0, 3) + "-" + result.slice(3, 6) + "-" + result.slice(6, 9);
+}
+
+/**
+ * Checks if a given deviceId has an active, non-expired license.
+ */
+function checkLicenseStatus(spreadsheet, deviceId) {
+  if (!deviceId) return { valid: false, reason: "no_device_id" };
+  const licSheet = getOrCreateLicensesSheet(spreadsheet);
+  const data = licSheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === deviceId.toString()) {
+      const status = data[i][4]; // Column E: Status
+      if (status === "Active") {
+        const expiry = data[i][5]; // Column F: ExpiryDate
+        if (expiry && expiry !== "Permanent") {
+          if (new Date() > new Date(expiry)) {
+            return { valid: false, reason: "expired" };
+          }
+        }
+        return { valid: true, licenseType: data[i][3], expiry: expiry ? expiry.toString() : "Permanent" };
+      }
+      return { valid: false, reason: data[i][4] === "Revoked" ? "revoked" : "inactive" };
+    }
+  }
+  return { valid: false, reason: "not_found" };
+}
+
+/**
+ * Online flow: called by the APK on first launch.
+ * Finds a completed M-PESA transaction for the provided phone number and creates a license.
+ */
+function registerOnlineLicense(spreadsheet, deviceId, phoneNumber) {
+  if (!deviceId || !phoneNumber) return { success: false, error: "Missing deviceId or phoneNumber" };
+
+  // If already licensed, return success immediately (idempotent)
+  const existing = checkLicenseStatus(spreadsheet, deviceId);
+  if (existing.valid) return { success: true, alreadyRegistered: true };
+
+  // Normalize phone number (accept 07xx, 2547xx, +2547xx formats)
+  const normalizePhone = (p) => p.toString().replace(/^\+/, "").replace(/^0/, "254");
+  const normalizedInput = normalizePhone(phoneNumber);
+
+  // Find a completed transaction for this phone number
+  const txSheet = getOrCreateSheet(spreadsheet, "Transactions");
+  const txData  = txSheet.getDataRange().getValues();
+  let foundTx   = false;
+
+  for (let i = txData.length - 1; i >= 1; i--) {
+    const txPhone  = normalizePhone(txData[i][1]);
+    const txStatus = txData[i][3];
+    if (txPhone === normalizedInput && txStatus === "Completed") {
+      foundTx = true;
+      break;
+    }
+  }
+
+  if (!foundTx) {
+    return { success: false, error: "No completed M-PESA payment found for +" + normalizedInput + ". Please ensure you paid on the website and try again." };
+  }
+
+  // Register the license
+  const licSheet = getOrCreateLicensesSheet(spreadsheet);
+  const code     = generateActivationCode(deviceId);
+  licSheet.appendRow([deviceId, phoneNumber, code, "Online", "Active", "Permanent", new Date(), "Auto-registered via M-PESA website payment"]);
+
+  return { success: true };
+}
+
+/**
+ * Offline flow (admin only): generates an activation code for a device and stores it.
+ */
+function generateOfflineLicense(spreadsheet, deviceId, phoneNumber, amount, notes) {
+  if (!deviceId) return { success: false, error: "DeviceID is required" };
+
+  // Prevent double-issuing a license
+  const existing = checkLicenseStatus(spreadsheet, deviceId);
+  if (existing.valid) {
+    return { success: false, error: "This device already has an active license. Revoke it first to re-issue." };
+  }
+
+  const code     = generateActivationCode(deviceId);
+  const licSheet = getOrCreateLicensesSheet(spreadsheet);
+  licSheet.appendRow([
+    deviceId,
+    phoneNumber || "",
+    code,
+    "Offline",
+    "Active",
+    "Permanent",
+    new Date(),
+    "Offline install. Amount: KES " + (amount || "N/A") + ". " + (notes || "")
+  ]);
+
+  return { success: true, activationCode: code };
+}
+
+/**
+ * Validates an activation code entered by the user.
+ * Code is deterministic — same deviceId always gets the same code.
+ */
+function validateOfflineCode(spreadsheet, deviceId, code) {
+  if (!deviceId || !code) return { success: false, error: "Missing parameters" };
+
+  const expectedCode = generateActivationCode(deviceId);
+  const cleanCode    = code.toString().toUpperCase().replace(/\s/g, "");
+
+  if (cleanCode !== expectedCode) {
+    return { success: false, error: "Invalid activation code. Please double-check and try again." };
+  }
+
+  // Verify the license record exists in the sheet (admin must have pre-registered it)
+  const result = checkLicenseStatus(spreadsheet, deviceId);
+  if (result.valid) return { success: true };
+
+  if (result.reason === "not_found") {
+    return { success: false, error: "Code is correct but this device has not been registered yet. Please ask your agent to register your device first." };
+  }
+
+  return { success: false, error: "License is " + result.reason + ". Please contact support." };
+}
+
+/**
+ * Returns all license records (admin only, newest first).
+ */
+function getAllLicenses(spreadsheet) {
+  const licSheet = getOrCreateLicensesSheet(spreadsheet);
+  const data     = licSheet.getDataRange().getValues();
+  const licenses = [];
+
+  for (let i = 1; i < data.length; i++) {
+    licenses.push({
+      deviceId:       data[i][0],
+      phoneNumber:    data[i][1],
+      activationCode: data[i][2],
+      licenseType:    data[i][3],
+      status:         data[i][4],
+      expiryDate:     data[i][5] ? data[i][5].toString() : "Permanent",
+      dateCreated:    data[i][6] ? new Date(data[i][6]).toLocaleDateString("en-KE") : "",
+      notes:          data[i][7]
+    });
+  }
+
+  return { licenses: licenses.reverse() }; // Newest first
+}
+
+/**
+ * Revokes a license by DeviceID (admin only).
+ */
+function revokeLicense(spreadsheet, deviceId) {
+  if (!deviceId) return { success: false, error: "DeviceID is required" };
+  const licSheet = getOrCreateLicensesSheet(spreadsheet);
+  const data     = licSheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString() === deviceId.toString()) {
+      licSheet.getRange(i + 1, 5).setValue("Revoked");
+      return { success: true };
+    }
+  }
+  return { success: false, error: "License not found for deviceId: " + deviceId };
 }

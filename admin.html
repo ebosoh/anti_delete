@@ -83,6 +83,75 @@
     .back-link:hover {
       text-decoration: underline;
     }
+
+    /* ---- License-specific styles ---- */
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: 40px 0;
+    }
+
+    .generated-code-box {
+      background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.1));
+      border: 2px solid var(--accent-mint);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .generated-code-box .code-value {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: monospace;
+      letter-spacing: 6px;
+      color: var(--accent-mint);
+      display: block;
+      margin: 8px 0;
+    }
+
+    .generated-code-box .code-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .badge-online  { background: rgba(59,130,246,0.2);  color: #60a5fa; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-offline { background: rgba(245,158,11,0.2);  color: #fbbf24; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-active  { background: rgba(16,185,129,0.2);  color: #34d399; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-revoked { background: rgba(239,68,68,0.2);   color: #f87171; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+    .btn-revoke {
+      background: rgba(239,68,68,0.15);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,0.3);
+      padding: 5px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-revoke:hover { background: rgba(239,68,68,0.3); }
+
+    .device-id-cell {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .license-count-badge {
+      background: var(--accent-mint);
+      color: #000;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
   </style>
 </head>
 <body>
@@ -168,21 +237,81 @@
           </tbody>
         </table>
       </div>
+
+      <hr class="section-divider">
+
+      <!-- ===== LICENSE GENERATOR ===== -->
+      <h3 style="margin-bottom: 6px; font-family: var(--font-title);">🔑 Generate Offline License</h3>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Use this after installing the app on a customer's phone and collecting payment. Paste their Device ID and click Generate.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="licDeviceId">Device ID <span style="color:#ef4444">*</span></label>
+          <input type="text" id="licDeviceId" class="form-input" placeholder="e.g. a8f3c92b1d4e5f67" autocomplete="off">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="licPhone">Customer Phone</label>
+          <input type="text" id="licPhone" class="form-input" placeholder="e.g. 254708374149">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="licAmount">Amount Paid (KES)</label>
+          <input type="number" id="licAmount" class="form-input" placeholder="e.g. 100" value="100">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="licNotes">Notes (optional)</label>
+          <input type="text" id="licNotes" class="form-input" placeholder="e.g. Nairobi CBD client">
+        </div>
+      </div>
+
+      <button id="generateLicenseBtn" class="btn btn-primary" style="margin-top: 20px;">⚡ Generate &amp; Register License</button>
+      <p id="licFeedback" style="margin-top: 12px; font-size: 14px; font-weight: 600;"></p>
+
+      <!-- Generated Code Display -->
+      <div id="generatedCodeBox" class="generated-code-box" style="display: none;">
+        <span style="font-size: 13px; color: var(--text-muted);">Activation Code for this device:</span>
+        <span id="generatedCodeValue" class="code-value">---</span>
+        <p class="code-hint">Give this code to the customer. They will enter it in the app to unlock it.</p>
+        <button onclick="copyGeneratedCode()" class="btn btn-secondary" style="margin-top: 8px; font-size: 13px;">📋 Copy Code</button>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- ===== LICENSES TABLE ===== -->
+      <h3 style="margin-bottom: 10px; font-family: var(--font-title);">📋 All Licenses <span id="licenseCountBadge" class="license-count-badge">0</span></h3>
+      <div class="table-container">
+        <table id="licensesTable">
+          <thead>
+            <tr>
+              <th>Device ID</th>
+              <th>Phone</th>
+              <th>Code</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="licensesTableBody">
+            <tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Loading licenses...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
   </main>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqJ3f5r4806a-placeholder/exec"; // Update with actual URL
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB4XY-xVrQSP-wNDGCyx3nURP5rSrHYufSbqZmtCp6ecOCNe4OW19Rmz_nHLchre4HuQ/exec"; // Update with actual URL
     let adminPass = "";
 
     document.getElementById("loginBtn").addEventListener("click", () => {
       const pass = document.getElementById("adminPassword").value;
-      if (pass === "admin123") { // Matches Apps Script backend default
+      if (pass === "Adm!n_TBr@1n26") { // Updated admin password
         adminPass = pass;
         document.getElementById("authBox").classList.add("hidden");
         document.getElementById("dashboardBox").classList.remove("hidden");
         loadDashboardData();
+        loadLicenses();
       } else {
         const error = document.getElementById("authError");
         error.classList.remove("hidden");
@@ -191,7 +320,6 @@
 
     function loadDashboardData() {
       if (APPS_SCRIPT_URL.includes("placeholder")) {
-        // Mock dashboard display if backend is not linked
         document.getElementById("dashVisitors").innerText = "1,240";
         document.getElementById("dashDownloads").innerText = "432";
         return;
@@ -212,12 +340,10 @@
         .then(ads => {
           const tbody = document.getElementById("adsTableBody");
           tbody.innerHTML = "";
-
           if (!ads || ads.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No ads active.</td></tr>';
             return;
           }
-
           ads.forEach(ad => {
             const tr = document.createElement("tr");
             const ctr = ad.impressions > 0 ? ((ad.clicks / ad.impressions) * 100).toFixed(1) + "%" : "0%";
@@ -235,9 +361,9 @@
     }
 
     document.getElementById("submitAdBtn").addEventListener("click", () => {
-      const imageUrl = document.getElementById("adImageUrl").value;
+      const imageUrl    = document.getElementById("adImageUrl").value;
       const redirectUrl = document.getElementById("adRedirectUrl").value;
-      const feedback = document.getElementById("adFeedback");
+      const feedback    = document.getElementById("adFeedback");
 
       if (!imageUrl || !redirectUrl) {
         feedback.style.color = "#ef4444";
@@ -256,7 +382,7 @@
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors", // Required for Apps Script web app requests without CORS preflight
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "uploadAd",
@@ -268,7 +394,7 @@
       .then(() => {
         feedback.style.color = "#10b981";
         feedback.innerText = "Ad published successfully! Refreshing dashboard...";
-        document.getElementById("adImageUrl").value = "";
+        document.getElementById("adImageUrl").value    = "";
         document.getElementById("adRedirectUrl").value = "";
         setTimeout(loadDashboardData, 1500);
       })
@@ -278,6 +404,134 @@
         console.error(err);
       });
     });
+
+    // ==================== LICENSE MANAGEMENT ====================
+
+    document.getElementById("generateLicenseBtn").addEventListener("click", () => {
+      const deviceId = document.getElementById("licDeviceId").value.trim();
+      const phone    = document.getElementById("licPhone").value.trim();
+      const amount   = document.getElementById("licAmount").value.trim();
+      const notes    = document.getElementById("licNotes").value.trim();
+      const feedback = document.getElementById("licFeedback");
+      const codeBox  = document.getElementById("generatedCodeBox");
+
+      if (!deviceId) {
+        feedback.style.color = "#ef4444";
+        feedback.innerText = "Device ID is required.";
+        return;
+      }
+
+      feedback.style.color = "#9ca3af";
+      feedback.innerText = "Generating license...";
+      codeBox.style.display = "none";
+
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "generateOfflineLicense",
+          password: adminPass,
+          deviceId, phone, amount, notes
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          feedback.style.color = "#10b981";
+          feedback.innerText = "✅ License registered! Give the code below to the customer.";
+          document.getElementById("generatedCodeValue").textContent = data.activationCode;
+          codeBox.style.display = "block";
+          // Clear the form
+          document.getElementById("licDeviceId").value = "";
+          document.getElementById("licPhone").value    = "";
+          document.getElementById("licNotes").value    = "";
+          // Refresh licenses table
+          setTimeout(loadLicenses, 1000);
+        } else {
+          feedback.style.color = "#ef4444";
+          feedback.innerText = "❌ " + (data.error || "Failed to generate license.");
+        }
+      })
+      .catch(err => {
+        feedback.style.color = "#ef4444";
+        feedback.innerText = "Network error. Check console.";
+        console.error(err);
+      });
+    });
+
+    function copyGeneratedCode() {
+      const code = document.getElementById("generatedCodeValue").textContent;
+      navigator.clipboard.writeText(code).then(() => alert("Code copied: " + code));
+    }
+
+    function loadLicenses() {
+      if (APPS_SCRIPT_URL.includes("placeholder")) {
+        renderLicenses([{
+          deviceId: "a8f3c92b1d4e5f67", phoneNumber: "254708374149",
+          activationCode: "ABK-3QP-M7N", licenseType: "Online", status: "Active",
+          expiryDate: "Permanent", dateCreated: "05/06/2026", notes: "Demo record"
+        }]);
+        return;
+      }
+
+      fetch(`${APPS_SCRIPT_URL}?action=getLicenses&password=${encodeURIComponent(adminPass)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) { console.error(data.error); return; }
+          renderLicenses(data.licenses || []);
+        })
+        .catch(err => console.error("Error loading licenses", err));
+    }
+
+    function renderLicenses(licenses) {
+      const tbody = document.getElementById("licensesTableBody");
+      document.getElementById("licenseCountBadge").textContent = licenses.length;
+      tbody.innerHTML = "";
+
+      if (!licenses || licenses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">No licenses registered yet.</td></tr>';
+        return;
+      }
+
+      licenses.forEach(lic => {
+        const tr = document.createElement("tr");
+        const typeBadge   = `<span class="badge-${lic.licenseType.toLowerCase()}">${lic.licenseType}</span>`;
+        const statusBadge = `<span class="badge-${lic.status.toLowerCase()}">${lic.status}</span>`;
+        const revokeBtn   = lic.status === "Active"
+          ? `<button class="btn-revoke" onclick="revokeLicense('${lic.deviceId}')">Revoke</button>`
+          : `<span style="color:var(--text-muted); font-size:12px;">—</span>`;
+        tr.innerHTML = `
+          <td><span class="device-id-cell" title="${lic.deviceId}">${lic.deviceId}</span></td>
+          <td style="font-size:13px;">${lic.phoneNumber || "—"}</td>
+          <td><code style="font-size:13px; color: var(--accent-mint);">${lic.activationCode}</code></td>
+          <td>${typeBadge}</td>
+          <td>${statusBadge}</td>
+          <td style="font-size:12px; color: var(--text-muted);">${lic.dateCreated}</td>
+          <td>${revokeBtn}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function revokeLicense(deviceId) {
+      if (!confirm(`Revoke license for device ${deviceId}?\nThe app will be blocked on this phone immediately.`)) return;
+
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "revokeLicense", password: adminPass, deviceId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("✅ License revoked. The device will be blocked on next app launch.");
+          loadLicenses();
+        } else {
+          alert("❌ " + (data.error || "Failed to revoke."));
+        }
+      })
+      .catch(err => alert("Network error. Check console."));
+    }
   </script>
 </body>
 </html>
