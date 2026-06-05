@@ -76,6 +76,7 @@ header {
   top: 0;
   z-index: 100;
   padding: 16px 0;
+  padding-top: max(16px, env(safe-area-inset-top));
 }
 
 .header-container {
@@ -1322,8 +1323,9 @@ body.apk-mode {
 }
 
 body.apk-mode header {
-  height: 60px;
-  padding: 10px 0;
+  height: auto;
+  min-height: 60px;
+  padding: 28px 0 10px 0; /* Add top padding to clear status bar/notch overlay */
   display: flex;
   align-items: center;
 }
@@ -1335,7 +1337,6 @@ body.apk-mode main.container {
   overflow: hidden;
   padding: 0;
   max-width: 100%;
-  height: calc(100vh - 60px);
 }
 
 body.apk-mode #appView {
