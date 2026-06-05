@@ -253,7 +253,7 @@ function trackVisit() {
   fetch(APPS_SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain" },
     body: JSON.stringify({ action: "trackVisit" })
   }).catch(err => console.error("Error tracking visit", err));
 }
@@ -264,7 +264,7 @@ function trackShare() {
   fetch(APPS_SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain" },
     body: JSON.stringify({ action: "trackShare" })
   }).catch(err => console.error("Error tracking share", err));
 }
@@ -275,7 +275,7 @@ function downloadApk() {
     fetch(APPS_SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ action: "trackDownload" })
     }).catch(err => console.error("Error tracking download", err));
   }
@@ -434,11 +434,23 @@ function setupShare() {
       }
     } else {
       // Fallback: Copy to Clipboard
-      try {
-        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-        alert("📋 Link & status message copied to clipboard! Share it on WhatsApp status to go viral.");
-      } catch (err) {
-        console.error("Failed to copy", err);
+      const copyText = `${shareData.text} ${shareData.url}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(copyText)
+          .then(() => alert("📋 Link & status message copied to clipboard! Share it on WhatsApp status to go viral."))
+          .catch(() => {
+            if (fallbackCopyText(copyText)) {
+              alert("📋 Link & status message copied to clipboard! Share it on WhatsApp status to go viral.");
+            } else {
+              prompt("Copy this link to share:", copyText);
+            }
+          });
+      } else {
+        if (fallbackCopyText(copyText)) {
+          alert("📋 Link & status message copied to clipboard! Share it on WhatsApp status to go viral.");
+        } else {
+          prompt("Copy this link to share:", copyText);
+        }
       }
     }
   });
@@ -814,14 +826,16 @@ async function submitOnlineActivation(deviceId, phoneInput) {
 /** Copies the device ID to clipboard with user feedback. */
 function copyDeviceId() {
   const id = document.getElementById("displayDeviceId").textContent;
-  if (navigator.clipboard) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(id).then(() => {
-      const btn = document.querySelector(".copy-btn");
-      btn.textContent = "✅ Copied!";
-      setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+      showCopySuccess();
+    }).catch(() => {
+      if (fallbackCopyText(id)) showCopySuccess();
+      else alert("Device ID: " + id);
     });
   } else {
-    alert("Device ID: " + id);
+    if (fallbackCopyText(id)) showCopySuccess();
+    else alert("Device ID: " + id);
   }
 }
 
@@ -842,4 +856,33 @@ function showActivationSuccessToast() {
   document.body.appendChild(toast);
   setTimeout(() => toast.classList.add("show"), 50);
   setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3000);
+}
+
+/** Fallback clipboard copying function for non-secure / file:// protocols. */
+function fallbackCopyText(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  let successful = false;
+  try {
+    successful = document.execCommand("copy");
+  } catch (err) {
+    console.error("Fallback copy failed", err);
+  }
+  document.body.removeChild(textArea);
+  return successful;
+}
+
+/** Triggers standard Copied feedback on copy button. */
+function showCopySuccess() {
+  const btn = document.querySelector(".copy-btn");
+  if (btn) {
+    btn.textContent = "✅ Copied!";
+    setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+  }
 }
