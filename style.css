@@ -1323,6 +1323,10 @@ footer {
     align-self: center;
   }
   
+  .cta-group {
+    justify-content: center;
+  }
+  
   .stats-section {
     order: 2;
     padding: 20px 0;
