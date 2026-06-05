@@ -192,14 +192,18 @@
       <h2 style="margin-bottom: 30px; font-family: var(--font-title);">Ads & Statistics Dashboard</h2>
 
       <!-- Mini Stats Row -->
-      <div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 40px; gap: 20px;">
+      <div class="stats-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 40px; gap: 20px;">
         <div class="stats-card">
           <div class="stats-number" id="dashVisitors">0</div>
           <div class="stats-label">Total Web Visitors</div>
         </div>
         <div class="stats-card">
           <div class="stats-number" id="dashDownloads">0</div>
-          <div class="stats-label">Total App Downloads</div>
+          <div class="stats-label">Total Downloads</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-number" id="dashShares">0</div>
+          <div class="stats-label">Total Shares</div>
         </div>
       </div>
 
@@ -322,6 +326,7 @@
       if (APPS_SCRIPT_URL.includes("placeholder")) {
         document.getElementById("dashVisitors").innerText = "1,240";
         document.getElementById("dashDownloads").innerText = "432";
+        document.getElementById("dashShares").innerText = "185";
         return;
       }
 
@@ -331,6 +336,7 @@
         .then(data => {
           document.getElementById("dashVisitors").innerText = data.visitors.toLocaleString();
           document.getElementById("dashDownloads").innerText = data.downloads.toLocaleString();
+          document.getElementById("dashShares").innerText = (data.shares || 0).toLocaleString();
         })
         .catch(err => console.error("Error loading stats", err));
 

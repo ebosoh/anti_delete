@@ -76,6 +76,10 @@
               <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span>Download Tiny APK <span class="badge">16 KB</span></span>
             </button>
+            <button id="shareStatusBtn" class="btn btn-secondary">
+              <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              <span>Share with Friends</span>
+            </button>
           </div>
           
           <!-- Sideload & Installation Guide -->
@@ -94,10 +98,6 @@
           <!-- Viral Share Status Card -->
           <div class="share-box">
             <p>📣 Saved 1,000+ deleted messages this week! Keep your WhatsApp chats complete.</p>
-            <button id="shareStatusBtn" class="btn-share">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-              Share with Friends
-            </button>
           </div>
         </div>
         
@@ -170,7 +170,12 @@
           <div class="stats-card">
             <div class="stats-icon">📥</div>
             <div class="stats-number" id="downloadCount">0</div>
-            <div class="stats-label">Downloads</div>
+            <div class="stats-label">Total Downloads</div>
+          </div>
+          <div class="stats-card">
+            <div class="stats-icon">🔗</div>
+            <div class="stats-number" id="shareCount">0</div>
+            <div class="stats-label">Total Shares</div>
           </div>
           <div class="stats-card">
             <div class="stats-icon">🛡️</div>

@@ -228,6 +228,7 @@ function loadStats() {
     // Show mock stats if backend is not linked yet
     animateValue("visitorCount", 0, 1240, 1500);
     animateValue("downloadCount", 0, 432, 1500);
+    animateValue("shareCount", 0, 185, 1500);
     return;
   }
 
@@ -236,11 +237,13 @@ function loadStats() {
     .then(data => {
       animateValue("visitorCount", 0, Number(data.visitors) || 0, 1500);
       animateValue("downloadCount", 0, Number(data.downloads) || 0, 1500);
+      animateValue("shareCount", 0, Number(data.shares) || 0, 1500);
     })
     .catch(err => {
       console.error("Error loading statistics", err);
       document.getElementById("visitorCount").innerText = "---";
       document.getElementById("downloadCount").innerText = "---";
+      document.getElementById("shareCount").innerText = "---";
     });
 }
 
@@ -253,6 +256,17 @@ function trackVisit() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "trackVisit" })
   }).catch(err => console.error("Error tracking visit", err));
+}
+
+function trackShare() {
+  if (APPS_SCRIPT_URL.includes("placeholder")) return;
+
+  fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "trackShare" })
+  }).catch(err => console.error("Error tracking share", err));
 }
 
 function downloadApk() {
@@ -411,6 +425,7 @@ function setupShare() {
   };
 
   shareBtn.addEventListener("click", async () => {
+    trackShare();
     if (navigator.share) {
       try {
         await navigator.share(shareData);

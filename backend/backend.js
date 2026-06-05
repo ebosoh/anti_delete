@@ -82,6 +82,11 @@ function doPost(e) {
       return jsonResponse({ success: true, stats: getStatsData(sheet) });
     }
 
+    if (action === "trackShare") {
+      incrementStat(sheet, "shares");
+      return jsonResponse({ success: true, stats: getStatsData(sheet) });
+    }
+
     if (action === "initiatePayment") {
       const phoneNumber = postData.phoneNumber;
       const amount = postData.amount || "1000";
@@ -338,6 +343,7 @@ function getOrCreateSheet(spreadsheet, name) {
       sheet.appendRow(["Key", "Value"]);
       sheet.appendRow(["visitors", 0]);
       sheet.appendRow(["downloads", 0]);
+      sheet.appendRow(["shares", 0]);
     } else if (name === "Ads") {
       sheet.appendRow(["Id", "ImageUrl", "RedirectUrl", "Impressions", "Clicks", "Status", "DateAdded"]);
     } else if (name === "Transactions") {
@@ -361,13 +367,19 @@ function getStatsData(spreadsheet) {
 function incrementStat(spreadsheet, key) {
   const sheet = getOrCreateSheet(spreadsheet, "Stats");
   const data = sheet.getDataRange().getValues();
+  let found = false;
   
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === key) {
       const cell = sheet.getRange(i + 1, 2);
       cell.setValue(Number(data[i][1]) + 1);
+      found = true;
       break;
     }
+  }
+  
+  if (!found) {
+    sheet.appendRow([key, 1]);
   }
 }
 
