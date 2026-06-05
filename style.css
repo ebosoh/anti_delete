@@ -225,9 +225,14 @@ h1 {
 
 .cta-group {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 30px;
   flex-wrap: wrap;
+}
+
+.cta-group .btn {
+  padding: 12px 20px;
+  font-size: 15px;
 }
 
 .btn {
