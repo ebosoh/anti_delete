@@ -84,7 +84,7 @@ function doPost(e) {
 
     if (action === "initiatePayment") {
       const phoneNumber = postData.phoneNumber;
-      const amount = postData.amount || "100";
+      const amount = postData.amount || "1000";
       return jsonResponse(initiateMpesaStkPush(sheet, phoneNumber, amount));
     }
 
