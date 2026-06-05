@@ -759,7 +759,7 @@ async function submitActivationCode(deviceId, code) {
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ action: "validateOfflineCode", deviceId, code })
     });
     const data = await response.json();
@@ -792,7 +792,7 @@ async function submitOnlineActivation(deviceId, phoneInput) {
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({ action: "registerOnlineLicense", deviceId, phoneNumber: formattedPhone })
     });
     const data = await response.json();

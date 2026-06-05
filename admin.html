@@ -433,7 +433,7 @@
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({
           action: "generateOfflineLicense",
           password: adminPass,
@@ -524,7 +524,7 @@
 
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "revokeLicense", password: adminPass, deviceId })
       })
       .then(res => res.json())
