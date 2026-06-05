@@ -419,7 +419,7 @@ function setupShare() {
   if (!shareBtn) return;
 
   const shareData = {
-    title: "Anti-Delete | Save WhatsApp Chats",
+    title: "Anti-Delete | Your WhatsApp Spy!",
     text: "🛡️ Save WhatsApp messages even after the sender deletes them! Free & private. Check it out!",
     url: window.location.href
   };
