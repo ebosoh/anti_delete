@@ -39,8 +39,8 @@ function detectEnvironment() {
     trackVisit();
     loadStats();
 
-    // Download APK trigger (Requires M-PESA Payment)
-    document.getElementById("downloadApkBtn").addEventListener("click", openPaymentModal);
+    // Download APK trigger (Direct download)
+    document.getElementById("downloadApkBtn").addEventListener("click", downloadApk);
   }
 }
 
