@@ -420,7 +420,7 @@ function setupShare() {
 
   const shareData = {
     title: "Anti-Delete | Your WhatsApp Spy!",
-    text: "🛡️ Save WhatsApp messages even after the sender deletes them! Free & private. Check it out!",
+    text: "🛡️ Save WhatsApp messages even after the sender deletes them! Check it out!",
     url: window.location.href
   };
 
