@@ -451,6 +451,20 @@
     </div>
   </div>
 
+  <!-- Contact Deleted Messages Modal -->
+  <div id="contactMessagesModal" class="modal-overlay hidden">
+    <div class="payment-card chat-detail-card" style="max-height: 85vh; display: flex; flex-direction: column; padding: 30px 24px;">
+      <button id="closeChatDetailBtn" class="modal-close-btn">&times;</button>
+      <div class="chat-detail-header" style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+        <h3 id="chatDetailSender" style="font-family: var(--font-title); color: var(--text-primary); font-size: 20px; margin-bottom: 6px; word-break: break-all;">Sender Name</h3>
+        <span id="chatDetailCount" class="message-badge badge-deleted" style="display: inline-block;">0 deleted messages</span>
+      </div>
+      <div id="chatDetailList" class="chat-detail-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 4px;">
+        <!-- Messages populated dynamically -->
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

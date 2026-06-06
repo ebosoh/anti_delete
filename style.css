@@ -2102,3 +2102,74 @@ body.apk-mode .activation-container {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
+
+/* Contact list styles under Deleted Only tab */
+.contact-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05);
+}
+
+.contact-item:active {
+  transform: translateY(0);
+}
+
+.contact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.contact-name {
+  font-family: var(--font-title);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.contact-time {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.contact-preview {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.latest-deleted-msg {
+  font-style: italic;
+}
+
+.contact-meta {
+  display: flex;
+  align-items: center;
+}
+
+.deleted-count-badge {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+

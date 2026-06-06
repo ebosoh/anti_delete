@@ -46,13 +46,14 @@ function detectEnvironment() {
 
 // 2. Android Wrapper WebView Communication (Local DB)
 let localMessages = [];
+let activeFilter = "all";
 
 function loadLocalMessages() {
   try {
     if (typeof AndroidBridge !== "undefined") {
       const messagesJson = AndroidBridge.getMessages();
       localMessages = JSON.parse(messagesJson);
-      renderMessages(localMessages);
+      filterAndRenderMessages();
     }
   } catch (error) {
     console.error("Failed to parse local messages", error);
@@ -171,11 +172,12 @@ function setupAppControls() {
 
   // Search filter
   const searchInput = document.getElementById("searchBar");
-  searchInput.addEventListener("input", filterAndRenderMessages);
+  if (searchInput) {
+    searchInput.addEventListener("input", filterAndRenderMessages);
+  }
 
   // Tab filter
   const tabBtns = document.querySelectorAll(".tab-btn");
-  let activeFilter = "all";
 
   tabBtns.forEach(btn => {
     btn.addEventListener("click", (e) => {
@@ -186,21 +188,136 @@ function setupAppControls() {
     });
   });
 
-  function filterAndRenderMessages() {
-    const query = searchInput.value.toLowerCase();
-    const filtered = localMessages.filter(msg => {
-      const matchesSearch = msg.sender.toLowerCase().includes(query) || msg.content.toLowerCase().includes(query);
-      const matchesTab = activeFilter === "all" || (activeFilter === "deleted" && msg.is_deleted === 1);
-      return matchesSearch && matchesTab;
+  // Close chat detail modal listeners
+  const closeChatBtn = document.getElementById("closeChatDetailBtn");
+  const chatModal = document.getElementById("contactMessagesModal");
+  if (closeChatBtn && chatModal) {
+    closeChatBtn.addEventListener("click", () => {
+      chatModal.classList.add("hidden");
     });
-    renderMessages(filtered);
+    chatModal.addEventListener("click", (e) => {
+      if (e.target === chatModal) {
+        chatModal.classList.add("hidden");
+      }
+    });
   }
 
   // Refresh
-  document.getElementById("refreshBtn").addEventListener("click", () => {
-    loadLocalMessages();
-    checkNotificationPermission();
+  const refreshBtn = document.getElementById("refreshBtn");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => {
+      loadLocalMessages();
+      checkNotificationPermission();
+    });
+  }
+}
+
+function filterAndRenderMessages() {
+  const searchInput = document.getElementById("searchBar");
+  const query = searchInput ? searchInput.value.toLowerCase() : "";
+
+  if (activeFilter === "all") {
+    const filtered = localMessages.filter(msg => {
+      const matchesSearch = msg.sender.toLowerCase().includes(query) || msg.content.toLowerCase().includes(query);
+      return matchesSearch;
+    });
+    renderMessages(filtered);
+  } else if (activeFilter === "deleted") {
+    const contactsMap = {};
+    localMessages.forEach(msg => {
+      if (msg.is_deleted === 1) {
+        const senderMatches = msg.sender.toLowerCase().includes(query);
+        const contentMatches = msg.content.toLowerCase().includes(query);
+        
+        if (!contactsMap[msg.sender]) {
+          contactsMap[msg.sender] = {
+            sender: msg.sender,
+            deletedCount: 0,
+            latestMsg: msg,
+            allDeletedMsgs: [],
+            matchesQuery: false
+          };
+        }
+        contactsMap[msg.sender].deletedCount++;
+        contactsMap[msg.sender].allDeletedMsgs.push(msg);
+        if (senderMatches || contentMatches) {
+          contactsMap[msg.sender].matchesQuery = true;
+        }
+      }
+    });
+
+    const contacts = Object.values(contactsMap).filter(c => {
+      return !query || c.matchesQuery;
+    });
+
+    renderContactsList(contacts);
+  }
+}
+
+function renderContactsList(contacts) {
+  const listContainer = document.getElementById("messagesList");
+  listContainer.innerHTML = "";
+
+  if (contacts.length === 0) {
+    listContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🛡️</div>
+        <p>No contacts with deleted messages found.</p>
+      </div>
+    `;
+    return;
+  }
+
+  contacts.forEach(contact => {
+    const item = document.createElement("div");
+    item.className = "contact-item";
+    item.addEventListener("click", () => {
+      showContactDeletedMessagesModal(contact);
+    });
+
+    const formattedDate = new Date(contact.latestMsg.timestamp).toLocaleString();
+    item.innerHTML = `
+      <div class="contact-header">
+        <span class="contact-name">${escapeHtml(contact.sender)}</span>
+        <span class="contact-time">${formattedDate}</span>
+      </div>
+      <div class="contact-preview">
+        <span class="latest-deleted-msg">${escapeHtml(contact.latestMsg.content)}</span>
+      </div>
+      <div class="contact-meta">
+        <span class="deleted-count-badge">🛡️ ${contact.deletedCount} ${contact.deletedCount === 1 ? 'Message' : 'Messages'}</span>
+      </div>
+    `;
+    listContainer.appendChild(item);
   });
+}
+
+function showContactDeletedMessagesModal(contact) {
+  const modal = document.getElementById("contactMessagesModal");
+  const senderEl = document.getElementById("chatDetailSender");
+  const countEl = document.getElementById("chatDetailCount");
+  const listEl = document.getElementById("chatDetailList");
+
+  if (!modal || !senderEl || !countEl || !listEl) return;
+
+  senderEl.textContent = contact.sender;
+  countEl.textContent = `${contact.deletedCount} ${contact.deletedCount === 1 ? 'deleted message' : 'deleted messages'}`;
+  
+  listEl.innerHTML = "";
+  contact.allDeletedMsgs.forEach(msg => {
+    const item = document.createElement("div");
+    item.className = "detail-msg-item";
+    const formattedDate = new Date(msg.timestamp).toLocaleString();
+    item.innerHTML = `
+      <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">${formattedDate}</div>
+      <div style="background: var(--bg-primary); border: 1px solid var(--border-color); padding: 12px; border-radius: 14px; color: var(--text-primary); font-size: 14px; word-break: break-word;">
+        ${escapeHtml(msg.content)}
+      </div>
+    `;
+    listEl.appendChild(item);
+  });
+
+  modal.classList.remove("hidden");
 }
 
 // 3. Web UI Stats API (Apps Script)
