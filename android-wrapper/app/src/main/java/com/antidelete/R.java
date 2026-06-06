@@ -11,4 +11,7 @@ public final class R {
   public static final class drawable {
     public static final int icon=0x7f010000;
   }
+  public static final class xml {
+    public static final int network_security_config=0x7f020000;
+  }
 }
