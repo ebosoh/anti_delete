@@ -15,7 +15,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     DatabaseHelper dbHelper;
-    private static final String WEB_APP_URL = "https://ebosoh.github.io/anti_delete/"; // User can update this
+    private static final String WEB_APP_URL = "https://www.antidelete.com/"; // User can update this
 
     @Override
     protected void onCreate(Bundle bundle) {

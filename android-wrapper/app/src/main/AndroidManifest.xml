@@ -12,7 +12,8 @@
         android:allowBackup="true"
         android:icon="@drawable/icon"
         android:label="AntiDelete"
-        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+        android:usesCleartextTraffic="true">
         
         <activity
             android:name=".MainActivity"
