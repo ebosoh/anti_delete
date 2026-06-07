@@ -127,6 +127,17 @@ public class MainActivity extends Activity implements Runnable {
         }
 
         @JavascriptInterface
+        public void downloadApk(String url) {
+            try {
+                android.net.Uri uri = android.net.Uri.parse(url);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                activity.startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(activity, "Failed to start download", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @JavascriptInterface
         public boolean isNotificationServiceEnabled() {
             return activity.isNotificationServiceEnabled();
         }

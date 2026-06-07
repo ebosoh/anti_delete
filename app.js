@@ -164,13 +164,18 @@ function checkForUpdates() {
             updateCard.classList.remove("hidden");
             
             updateBtn.onclick = () => {
-              // Direct user to download and trigger APK update installation
-              const link = document.createElement("a");
-              link.href = data.apkUrl;
-              link.download = "antidelete.apk";
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+              if (typeof AndroidBridge !== "undefined" && typeof AndroidBridge.downloadApk === "function") {
+                const absoluteApkUrl = new URL(data.apkUrl, window.location.href).href;
+                AndroidBridge.downloadApk(absoluteApkUrl);
+              } else {
+                // Direct user to download and trigger APK update installation (fallback)
+                const link = document.createElement("a");
+                link.href = data.apkUrl;
+                link.download = "antidelete.apk";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }
             };
           }
         }
