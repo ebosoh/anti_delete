@@ -79,6 +79,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
 
+        // Fallback: If no message was found for this specific sender (which can happen with grouped summaries or layout updates),
+        // let's fall back to marking the overall latest un-deleted message in the database.
+        if (lastId == -1) {
+            String fallbackQuery = "SELECT " + COLUMN_ID + " FROM " + TABLE_MESSAGES +
+                    " WHERE " + COLUMN_IS_DELETED + " = 0" +
+                    " ORDER BY " + COLUMN_ID + " DESC LIMIT 1";
+            Cursor fallbackCursor = db.rawQuery(fallbackQuery, null);
+            if (fallbackCursor.moveToFirst()) {
+                lastId = fallbackCursor.getInt(0);
+            }
+            fallbackCursor.close();
+        }
+
         if (lastId != -1) {
             ContentValues values = new ContentValues();
             values.put(COLUMN_IS_DELETED, 1);

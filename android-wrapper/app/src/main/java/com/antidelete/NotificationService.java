@@ -39,26 +39,52 @@ public class NotificationService extends NotificationListenerService {
         Bundle extras = notification.extras;
         if (extras == null) return;
 
+        // Extract Title
         CharSequence titleCharSeq = extras.getCharSequence(Notification.EXTRA_TITLE);
+        String title = titleCharSeq != null ? titleCharSeq.toString().trim() : "";
+
+        // Extract Text (with fallbacks for BigText and TextLines)
+        String text = "";
         CharSequence textCharSeq = extras.getCharSequence(Notification.EXTRA_TEXT);
+        if (textCharSeq != null) {
+            text = textCharSeq.toString().trim();
+        }
 
-        if (titleCharSeq == null || textCharSeq == null) return;
+        if (text.isEmpty()) {
+            CharSequence bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT);
+            if (bigText != null) {
+                text = bigText.toString().trim();
+            }
+        }
 
-        String title = titleCharSeq.toString().trim();
-        String text = textCharSeq.toString().trim();
+        if (text.isEmpty()) {
+            CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
+            if (lines != null && lines.length > 0) {
+                text = lines[lines.length - 1].toString().trim();
+            }
+        }
 
-        // Filter out WhatsApp system notifications (e.g. "Checking for new messages", "WhatsApp Web", etc.)
-        if (text.equals("Checking for new messages") ||
-            text.startsWith("WhatsApp Web is currently active") ||
-            text.equals("Backup in progress") ||
-            title.equals("WhatsApp")) {
+        if (title.isEmpty() || text.isEmpty()) {
             return;
+        }
+
+        // Check if this is a "message deleted" notification first
+        boolean isDeletion = isDeletionNotification(text);
+
+        // Filter out WhatsApp system notifications (unless it is a deletion event)
+        if (!isDeletion) {
+            if (text.equals("Checking for new messages") ||
+                text.startsWith("WhatsApp Web is currently active") ||
+                text.equals("Backup in progress") ||
+                title.equals("WhatsApp")) {
+                return;
+            }
         }
 
         long timestamp = sbn.getPostTime();
 
-        // Check if this is a "message deleted" notification
-        if (isDeletionNotification(text)) {
+        // Process message
+        if (isDeletion) {
             boolean success = false;
             // Extract sender name prefix for group chats (format: "Sender Name: Message content")
             int colonIdx = text.indexOf(": ");
@@ -93,7 +119,8 @@ public class NotificationService extends NotificationListenerService {
         return lowerText.contains("this message was deleted") ||
                lowerText.contains("message was deleted") ||
                lowerText.contains("message deleted") ||
-               // Common variations or localized equivalents can be added here
+               lowerText.contains("ujumbe huu ulifutwa") ||
+               lowerText.contains("ujumbe ulifutwa") ||
                lowerText.equals("🚫 message deleted");
     }
 }
