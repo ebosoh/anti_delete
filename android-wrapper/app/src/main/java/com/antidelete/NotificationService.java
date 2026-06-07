@@ -57,11 +57,24 @@ public class NotificationService extends NotificationListenerService {
             }
         }
 
-        if (text.isEmpty()) {
-            CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
-            if (lines != null && lines.length > 0) {
-                text = lines[lines.length - 1].toString().trim();
+        // Keep lines array reference to check for grouped updates
+        CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
+
+        // Check for deletion notifications inside EXTRA_TEXT_LINES (for grouped notifications)
+        if (lines != null && lines.length > 0) {
+            for (CharSequence lineCharSeq : lines) {
+                if (lineCharSeq == null) continue;
+                String lineText = lineCharSeq.toString().trim();
+                if (isDeletionNotification(lineText)) {
+                    processDeletion(title, lineText, sbn.getPostTime());
+                    notifyWebView();
+                    return; // Stop processing after handling the deletion
+                }
             }
+        }
+
+        if (text.isEmpty() && lines != null && lines.length > 0) {
+            text = lines[lines.length - 1].toString().trim();
         }
 
         if (title.isEmpty() || text.isEmpty()) {
@@ -85,28 +98,36 @@ public class NotificationService extends NotificationListenerService {
 
         // Process message
         if (isDeletion) {
-            boolean success = false;
-            // Extract sender name prefix for group chats (format: "Sender Name: Message content")
-            int colonIdx = text.indexOf(": ");
-            if (colonIdx > 0) {
-                String senderPrefix = text.substring(0, colonIdx).trim();
-                success = dbHelper.markLastMessageDeleted(title, senderPrefix);
-            } else {
-                success = dbHelper.markLastMessageDeleted(title);
-            }
-            
-            Log.d(TAG, "Message deletion detected for sender: " + title + ", marked last message: " + success);
-            
-            if (!success) {
-                // Fallback: If no original message was found to mark deleted, insert a new placeholder message marked as deleted
-                dbHelper.insertPlaceholderDeletedMessage(title, text, timestamp);
-            }
+            processDeletion(title, text, timestamp);
         } else {
             // Save the incoming message
             dbHelper.insertMessage(title, text, timestamp);
             Log.d(TAG, "Logged message from " + title + ": " + text);
         }
 
+        notifyWebView();
+    }
+
+    private void processDeletion(String title, String text, long timestamp) {
+        boolean success = false;
+        // Extract sender name prefix for group chats (format: "Sender Name: Message content")
+        int colonIdx = text.indexOf(": ");
+        if (colonIdx > 0) {
+            String senderPrefix = text.substring(0, colonIdx).trim();
+            success = dbHelper.markLastMessageDeleted(title, senderPrefix);
+        } else {
+            success = dbHelper.markLastMessageDeleted(title);
+        }
+        
+        Log.d(TAG, "Message deletion detected for sender: " + title + ", marked last message: " + success);
+        
+        if (!success) {
+            // Fallback: If no original message was found to mark deleted, insert a new placeholder message marked as deleted
+            dbHelper.insertPlaceholderDeletedMessage(title, text, timestamp);
+        }
+    }
+
+    private void notifyWebView() {
         // Notify MainActivity to refresh WebView if it is running in foreground
         MainActivity mainActivity = MainActivity.getInstance();
         if (mainActivity != null) {
