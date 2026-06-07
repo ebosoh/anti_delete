@@ -164,11 +164,17 @@ function checkForUpdates() {
             updateCard.classList.remove("hidden");
             
             updateBtn.onclick = () => {
-              if (typeof AndroidBridge !== "undefined" && typeof AndroidBridge.downloadApk === "function") {
-                const absoluteApkUrl = new URL(data.apkUrl, window.location.href).href;
-                AndroidBridge.downloadApk(absoluteApkUrl);
+              if (typeof AndroidBridge !== "undefined") {
+                if (typeof AndroidBridge.downloadApk === "function") {
+                  const absoluteApkUrl = new URL(data.apkUrl, window.location.href).href;
+                  AndroidBridge.downloadApk(absoluteApkUrl);
+                } else {
+                  // Fallback for older APKs lacking the downloadApk native method
+                  alert("To apply this update, please download and install the new version (v1.03) manually from www.antidelete.com in your web browser.");
+                  window.location.href = "https://www.antidelete.com/";
+                }
               } else {
-                // Direct user to download and trigger APK update installation (fallback)
+                // Direct user to download and trigger APK update installation (browser fallback)
                 const link = document.createElement("a");
                 link.href = data.apkUrl;
                 link.download = "antidelete.apk";
