@@ -49,16 +49,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_MESSAGES, null, values);
     }
 
-    public synchronized boolean markLastMessageDeleted(String sender) {
+    public synchronized boolean markLastMessageDeleted(String sender, String senderPrefix) {
         SQLiteDatabase db = this.getWritableDatabase();
         
-        // Find the last message from this sender that is not already marked deleted
-        String query = "SELECT " + COLUMN_ID + " FROM " + TABLE_MESSAGES +
-                " WHERE " + COLUMN_SENDER + " = ?" +
-                " AND " + COLUMN_IS_DELETED + " = 0" +
-                " ORDER BY " + COLUMN_ID + " DESC LIMIT 1";
+        String query;
+        String[] selectionArgs;
         
-        Cursor cursor = db.rawQuery(query, new String[]{sender});
+        if (senderPrefix != null && !senderPrefix.isEmpty()) {
+            // Group chat mode: find the last message from this group where the content starts with the sender's prefix
+            query = "SELECT " + COLUMN_ID + " FROM " + TABLE_MESSAGES +
+                    " WHERE " + COLUMN_SENDER + " = ?" +
+                    " AND " + COLUMN_CONTENT + " LIKE ?" +
+                    " AND " + COLUMN_IS_DELETED + " = 0" +
+                    " ORDER BY " + COLUMN_ID + " DESC LIMIT 1";
+            selectionArgs = new String[]{sender, senderPrefix + "%"};
+        } else {
+            // Direct chat mode: find the last message from this sender
+            query = "SELECT " + COLUMN_ID + " FROM " + TABLE_MESSAGES +
+                    " WHERE " + COLUMN_SENDER + " = ?" +
+                    " AND " + COLUMN_IS_DELETED + " = 0" +
+                    " ORDER BY " + COLUMN_ID + " DESC LIMIT 1";
+            selectionArgs = new String[]{sender};
+        }
+        
+        Cursor cursor = db.rawQuery(query, selectionArgs);
         int lastId = -1;
         if (cursor.moveToFirst()) {
             lastId = cursor.getInt(0);
@@ -72,6 +86,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return true;
         }
         return false;
+    }
+
+    public synchronized boolean markLastMessageDeleted(String sender) {
+        return markLastMessageDeleted(sender, null);
+    }
+
+    public synchronized void insertPlaceholderDeletedMessage(String sender, String content, long timestamp) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SENDER, sender);
+        values.put(COLUMN_CONTENT, content);
+        values.put(COLUMN_TIMESTAMP, timestamp);
+        values.put(COLUMN_IS_DELETED, 1);
+        db.insert(TABLE_MESSAGES, null, values);
     }
 
     public synchronized String getMessagesJson() {

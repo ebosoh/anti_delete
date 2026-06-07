@@ -11,15 +11,32 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements Runnable {
 
+    private static MainActivity instance;
     private WebView webView;
     DatabaseHelper dbHelper;
     private static final String WEB_APP_URL = "https://www.antidelete.com/"; // User can update this
 
+    public static MainActivity getInstance() {
+        return instance;
+    }
+
+    public void refreshWebView() {
+        runOnUiThread(this);
+    }
+
+    @Override
+    public void run() {
+        if (webView != null) {
+            webView.evaluateJavascript("javascript:if(typeof loadLocalMessages === 'function'){loadLocalMessages();}", null);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        instance = this;
 
         dbHelper = new DatabaseHelper(this);
 
@@ -76,6 +93,14 @@ public class MainActivity extends Activity {
             startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(this, "Could not open notification settings automatically", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (instance == this) {
+            instance = null;
         }
     }
 

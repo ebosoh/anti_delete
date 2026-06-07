@@ -3,6 +3,28 @@
 // Configuration
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB4XY-xVrQSP-wNDGCyx3nURP5rSrHYufSbqZmtCp6ecOCNe4OW19Rmz_nHLchre4HuQ/exec"; // Update with actual URL after deploy
 
+// 0. Browser Mock Mode for Developer Testing (activated via ?apk=true in URL)
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get("apk") === "true" && typeof AndroidBridge === "undefined") {
+  window.AndroidBridge = {
+    getMessages: function() {
+      return JSON.stringify([
+        { id: 1, sender: "James Wafula", content: "Hey, are you free tonight?", timestamp: Date.now() - 600000, is_deleted: 0 },
+        { id: 2, sender: "James Wafula", content: "I bought you a surprise gift! 🎁", timestamp: Date.now() - 300000, is_deleted: 1 },
+        { id: 3, sender: "Sarah", content: "Did you finish the report?", timestamp: Date.now() - 200000, is_deleted: 0 },
+        { id: 4, sender: "Sarah", content: "Oops, sent to wrong person", timestamp: Date.now() - 150000, is_deleted: 1 },
+        { id: 5, sender: "Grogan spares zone", content: "John: Hey check this out", timestamp: Date.now() - 100000, is_deleted: 0 },
+        { id: 6, sender: "Grogan spares zone", content: "John: 🚫 This message was deleted", timestamp: Date.now() - 50000, is_deleted: 1 }
+      ]);
+    },
+    isNotificationServiceEnabled: function() { return true; },
+    openNotificationSettings: function() { alert("Mock: Opening notification settings"); },
+    getVersionCode: function() { return 1; },
+    getVersionName: function() { return "1.00"; },
+    getDeviceId: function() { return ""; } // degrades gracefully to bypass license check
+  };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   detectEnvironment();
   initDemo();
@@ -79,7 +101,7 @@ function renderMessages(messages) {
     item.className = "message-item";
     
     const formattedDate = new Date(msg.timestamp).toLocaleString();
-    const isDeleted = msg.is_deleted === 1;
+    const isDeleted = Number(msg.is_deleted) === 1;
 
     item.innerHTML = `
       <div class="message-meta">
@@ -225,7 +247,7 @@ function filterAndRenderMessages() {
   } else if (activeFilter === "deleted") {
     const contactsMap = {};
     localMessages.forEach(msg => {
-      if (msg.is_deleted === 1) {
+      if (Number(msg.is_deleted) === 1) {
         const senderMatches = msg.sender.toLowerCase().includes(query);
         const contentMatches = msg.content.toLowerCase().includes(query);
         

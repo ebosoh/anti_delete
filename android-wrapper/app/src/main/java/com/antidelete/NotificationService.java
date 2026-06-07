@@ -59,13 +59,32 @@ public class NotificationService extends NotificationListenerService {
 
         // Check if this is a "message deleted" notification
         if (isDeletionNotification(text)) {
-            // Mark the last message from this sender as deleted
-            boolean success = dbHelper.markLastMessageDeleted(title);
+            boolean success = false;
+            // Extract sender name prefix for group chats (format: "Sender Name: Message content")
+            int colonIdx = text.indexOf(": ");
+            if (colonIdx > 0) {
+                String senderPrefix = text.substring(0, colonIdx).trim();
+                success = dbHelper.markLastMessageDeleted(title, senderPrefix);
+            } else {
+                success = dbHelper.markLastMessageDeleted(title);
+            }
+            
             Log.d(TAG, "Message deletion detected for sender: " + title + ", marked last message: " + success);
+            
+            if (!success) {
+                // Fallback: If no original message was found to mark deleted, insert a new placeholder message marked as deleted
+                dbHelper.insertPlaceholderDeletedMessage(title, text, timestamp);
+            }
         } else {
             // Save the incoming message
             dbHelper.insertMessage(title, text, timestamp);
             Log.d(TAG, "Logged message from " + title + ": " + text);
+        }
+
+        // Notify MainActivity to refresh WebView if it is running in foreground
+        MainActivity mainActivity = MainActivity.getInstance();
+        if (mainActivity != null) {
+            mainActivity.refreshWebView();
         }
     }
 
