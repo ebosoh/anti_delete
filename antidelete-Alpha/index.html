@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anti-Delete | Recover Deleted WhatsApp Messages</title>
+  <meta name="description" content="Never miss a deleted message again. Anti-Delete runs silently in the background, keeping a private local copy of your notifications. Less than 100 KB footprint.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10B981">
+  
+  <!-- GA4 Tracking -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G7YRBQVGFN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-G7YRBQVGFN');
+  </script>
+</head>
+<body>
+
+  <!-- Background Glows -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-container">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <span>antiDELETE</span>
+      </div>
+      
+      <!-- Native Service Status (hidden on Web Landing, visible inside APK WebView) -->
+      <div id="serviceStatus" class="service-status hidden">
+        <span class="status-indicator"></span>
+        <span class="status-text">Active</span>
+      </div>
+      
+      <nav>
+        <a href="#features" class="nav-link web-only">Features</a>
+        <a href="#stats" class="nav-link web-only">Stats</a>
+        <a href="install.html" class="nav-link web-only">How to Install</a>
+        <a href="admin.html" class="nav-link web-only">Admin Portal</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main View -->
+  <main class="container">
+    
+    <!-- ==================== LANDING PAGE VIEW (Browser / Non-APK) ==================== -->
+    <section id="landingView" class="view-section">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="tagline">🔒 100% Secure & On-Device</div>
+          <h1>Never Miss a <span class="gradient-text">Deleted Message</span> Again</h1>
+          <div class="promo-text-blink">Ni Thao Tu!</div>
+          <p class="hero-desc">
+            Anti-Delete runs silently in the background of your phone, intercepting WhatsApp alerts and keeping a private local copy. Even if the sender clicks "Delete for Everyone", you still have it.
+          </p>
+          
+          <div class="cta-group">
+            <button id="downloadApkBtn" class="btn btn-primary">
+              <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download Tiny APK <span class="badge">16 KB</span></span>
+            </button>
+            <button id="shareStatusBtn" class="btn btn-secondary">
+              <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              <span>Share with Friends</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Live Demo / Phone Mockup -->
+        <div class="hero-preview">
+          <div class="phone-mockup">
+            <div class="phone-speaker"></div>
+            <div class="phone-screen">
+              <div class="chat-header">
+                <div class="chat-avatar">JW</div>
+                <div class="chat-info">
+                  <div class="chat-name">James Wafula</div>
+                  <div class="chat-status">typing...</div>
+                </div>
+              </div>
+              <div class="chat-body" id="chatDemoBody">
+                <div class="chat-bubble received">
+                  <span class="bubble-text">Hey, are you free tonight?</span>
+                  <span class="bubble-time">10:05 PM</span>
+                </div>
+                <div class="chat-bubble received deleted-placeholder" id="deletedBubble">
+                  <span class="bubble-text italic">🚫 This message was deleted.</span>
+                  <span class="bubble-time">10:06 PM</span>
+                </div>
+                <div class="chat-bubble received recovered hidden" id="recoveredBubble">
+                  <div class="recovered-badge">🛡️ Recovered by Anti-Delete</div>
+                  <span class="bubble-text">I bought you a surprise gift! 🎁</span>
+                  <span class="bubble-time">10:06 PM</span>
+                </div>
+              </div>
+              <div class="demo-trigger-area">
+                <button class="btn-demo" id="triggerDemoBtn">Simulate Delete</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- How antiDELETE Works Card -->
+          <div class="how-it-works-card">
+            <div class="card-header">
+              <span class="card-icon">🛡️</span>
+              <h3>How antiDELETE Works</h3>
+            </div>
+            <div class="card-steps">
+              <div class="step-item">
+                <span class="step-number">1</span>
+                <p><strong>Intercept Alerts</strong><br>Our lightweight background service reads WhatsApp notifications as soon as they reach your phone.</p>
+              </div>
+              <div class="step-item">
+                <span class="step-number">2</span>
+                <p><strong>Save Locally</strong><br>Message text is immediately saved to a secure SQLite database on your device's storage.</p>
+              </div>
+              <div class="step-item">
+                <span class="step-number">3</span>
+                <p><strong>Strictly Offline</strong><br>All messages stay 100% on your handset. Zero server uploads, zero sharing, total privacy.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div id="stats" class="stats-section">
+        <h2 class="live-stats-title"><span class="blink-dot"></span>Live Data</h2>
+        <div class="stats-grid">
+          <div class="stats-card">
+            <div class="stats-icon">👥</div>
+            <div class="stats-number" id="visitorCount">0</div>
+            <div class="stats-label">Total Web Visitors</div>
+          </div>
+          <div class="stats-card">
+            <div class="stats-icon">📥</div>
+            <div class="stats-number" id="downloadCount">0</div>
+            <div class="stats-label">Total Downloads</div>
+          </div>
+          <div class="stats-card">
+            <div class="stats-icon">🔗</div>
+            <div class="stats-number" id="shareCount">0</div>
+            <div class="stats-label">Total Shares</div>
+          </div>
+          <div class="stats-card">
+            <div class="stats-icon">🛡️</div>
+            <div class="stats-number" id="privacyPercent">0%</div>
+            <div class="stats-label">Privacy Protected (Local)</div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Features Section -->
+      <div id="features" class="features-section">
+        <h2>Why Users Love Anti-Delete</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>🪶 Ultra-Lightweight</h3>
+            <p>At under 100 KB, the app uses virtually zero memory, storage, or processing power, preserving your battery life.</p>
+          </div>
+          <div class="feature-card">
+            <h3>👁️ Instant Capture</h3>
+            <p>Incoming alerts are saved immediately when they hit your phone, bypassing the sender's attempts to wipe them.</p>
+          </div>
+          <div class="feature-card">
+            <h3>🔒 Complete Privacy</h3>
+            <p>We do not upload your messages to any servers. All chat logs are saved in a local, encrypted SQLite database on your device.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LOGGED IN MESSAGES VIEW (Inside APK) ==================== -->
+    <section id="appView" class="view-section hidden">
+      <div class="messages-container">
+        
+        <!-- In-App System Update Card -->
+        <div id="updateAppCard" class="update-app-card hidden">
+          <div class="update-icon">🚀</div>
+          <div class="update-info">
+            <span class="update-title">antiDELETE update available <span id="updateVersionName" style="font-size: 11.5px; opacity: 0.8; font-weight: normal; margin-left: 4px;"></span></span>
+          </div>
+          <button id="updateNowBtn" class="btn btn-update">Update</button>
+        </div>
+        
+        <!-- Permission Alert Card -->
+        <div id="permissionWarningCard" class="permission-warning-card hidden">
+          <span class="warning-title">🚨 Notification Access Required</span>
+          <p class="warning-descr">antiDELETE needs permission to read WhatsApp notifications to capture and backup deleted chats. Click below to grant access.</p>
+          
+          <details class="app-steps-details">
+            <summary>Getting "Restricted Setting" error?</summary>
+            <ol class="app-steps-list">
+              <li>Open your phone's <strong>Settings</strong> &rarr; <strong>Apps</strong>.</li>
+              <li>Select <strong>antiDELETE</strong>.</li>
+              <li>Tap the <strong>three vertical dots (⋮)</strong> in the top-right corner.</li>
+              <li>Tap <strong>"Allow restricted settings"</strong>.</li>
+              <li>Confirm using your PIN, pattern, or fingerprint.</li>
+              <li>Return here and tap the button below again.</li>
+            </ol>
+          </details>
+          
+          <button id="grantPermissionBtn" class="btn btn-warning">Grant Permission</button>
+        </div>
+
+        <div class="search-bar-container">
+          <input type="text" id="searchBar" class="search-input" placeholder="Search chats or messages...">
+          <button id="refreshBtn" class="btn btn-secondary btn-icon-only">🔄</button>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="tab-btn active" data-filter="all">All</button>
+          <button class="tab-btn" data-filter="WhatsApp">WhatsApp</button>
+          <button class="tab-btn" data-filter="Tel">Tel</button>
+          <button class="tab-btn" data-filter="FB">FB</button>
+          <button class="tab-btn" data-filter="IG">IG</button>
+          <button class="tab-btn" data-filter="SMS">SMS</button>
+          <button class="tab-btn" data-filter="deleted">🛡️ Deleted</button>
+        </div>
+
+        <div id="messagesList" class="messages-list">
+          <!-- Dynamically populated -->
+          <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <p>No messages captured yet. Send a message on WhatsApp to test.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ACTIVATION REQUIRED VIEW (Inside APK, Unlicensed) ==================== -->
+    <section id="activationView" class="view-section hidden">
+      <div class="activation-container">
+        <div class="activation-icon">🔐</div>
+        <h2 class="activation-title">Activation Required</h2>
+        <p id="activationReason" class="activation-reason">🔐 This device is not activated. Enter your code or verify your M-PESA payment.</p>
+
+        <!-- Device ID Card -->
+        <div class="device-id-card">
+          <span class="device-id-label">Your Device ID</span>
+          <div class="device-id-value-row">
+            <code id="displayDeviceId" class="device-id-value">Loading...</code>
+            <button onclick="copyDeviceId()" class="copy-btn" id="copyDeviceIdBtn">📋 Copy</button>
+          </div>
+          <p class="device-id-hint">📤 Share this ID with your agent to get your activation code.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="activation-tabs">
+          <button class="act-tab active" id="tabOffline" onclick="switchActivationTab('offline', this)">🔑 Have a Code?</button>
+          <button class="act-tab" id="tabOnline" onclick="switchActivationTab('online', this)">💳 Paid Online?</button>
+        </div>
+
+        <!-- Tab Content: Offline — Enter Activation Code -->
+        <div id="offlineActivationTab" class="activation-tab-content">
+          <p class="tab-desc">Enter the activation code provided by your agent after payment:</p>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <input type="text" id="activationCodeInput" class="form-input activation-code-input"
+              placeholder="ABC-DEF-GH2" maxlength="11" autocomplete="off" spellcheck="false">
+          </div>
+          <button id="submitCodeBtn" class="btn btn-primary" style="width: 100%;">Activate Device</button>
+        </div>
+
+        <!-- Tab Content: Online — Verify M-PESA Payment -->
+        <div id="onlineActivationTab" class="activation-tab-content hidden">
+          <p class="tab-desc">Enter the Safaricom number you used to pay on our website:</p>
+          <div class="phone-input-wrapper" style="margin-bottom: 16px;">
+            <span class="phone-prefix">+254</span>
+            <input type="tel" id="onlinePaymentPhone" class="form-input" placeholder="708374149" maxlength="9">
+          </div>
+          <button id="verifyOnlinePaymentBtn" class="btn btn-primary" style="width: 100%;">Verify M-PESA Payment</button>
+        </div>
+
+        <!-- WhatsApp Support -->
+        <a href="https://wa.me/254780010010" id="whatsappSupportLink" class="support-link" target="_blank">
+          💬 WhatsApp Support
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Banner Ads Space -->
+  <div id="adContainer" class="ad-container hidden">
+    <div class="ad-header">
+      <span>Sponsored Ad</span>
+      <button id="closeAdBtn" class="ad-close-btn">&times;</button>
+    </div>
+    <div id="adContent" class="ad-content">
+      <a href="#" id="adLink" target="_blank">
+        <img src="https://via.placeholder.com/728x90.png?text=Premium+Ad+Banner" alt="Advertisement" id="adImage">
+      </a>
+    </div>
+  </div>
+
+  <footer class="web-only">
+    <div class="container footer-grid">
+      <!-- Brand & Description -->
+      <div class="footer-col brand-col">
+        <div class="logo" style="margin-bottom: 12px;">
+          <div class="logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <span>antiDELETE</span>
+        </div>
+        <p class="brand-desc">Keep a private copy of incoming WhatsApp messages locally. Open source, offline, and secure.</p>
+      </div>
+
+      <!-- Social Links Column -->
+      <div class="footer-col">
+        <h4>Connect With Us</h4>
+        <div class="social-links">
+          <a href="https://www.linkedin.com/in/hudson-eboso-omunga/" target="_blank" class="social-icon linkedin" title="LinkedIn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+          <a href="https://github.com/ebosoh" target="_blank" class="social-icon github" title="GitHub">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+          </a>
+          <a href="https://www.facebook.com/profile.php?id=61574631280760" target="_blank" class="social-icon facebook" title="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+          </a>
+          <a href="#" target="_blank" class="social-icon tiktok" title="TikTok">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+          </a>
+          <a href="#" target="_blank" class="social-icon instagram" title="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Contacts Column -->
+      <div class="footer-col contact-col">
+        <h4>Contact & Support</h4>
+        <ul class="contact-list">
+          <li>
+            <svg class="contact-icon phone-glow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <a href="tel:+254780010010">+254 780 010 010</a>
+          </li>
+          <li>
+            <svg class="contact-icon email-glow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <a href="mailto:hudson.eboso@techbrain.africa">hudson.eboso@techbrain.africa</a>
+          </li>
+          <li>
+            <svg class="contact-icon web-glow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <a href="https://www.techbrain.africa" target="_blank">www.techbrain.africa</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright -->
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Anti-Delete App. Open Source & Privacy First | <a href="https://www.techbrain.africa" target="_blank" class="techbrain-tag">Powered by TechBrain AI</a></p>
+      <div class="footer-links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- M-PESA Payment Modal -->
+  <div id="paymentModal" class="modal-overlay hidden">
+    <div class="payment-card">
+      <button id="closePaymentBtn" class="modal-close-btn">&times;</button>
+      
+      <!-- Step 1: Input Details -->
+      <div id="paymentInputStep" class="payment-step">
+        <div class="mpesa-brand">
+          <span class="mpesa-logo">M</span>
+          <h3>Lipa na M-PESA</h3>
+        </div>
+        <p class="payment-subtitle">Download <strong>antiDELETE Pro APK</strong> for your phone.</p>
+        
+        <div class="price-tag">
+          <span class="currency">KES</span>
+          <span class="amount">1000</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="mpesaPhone">Safaricom Phone Number</label>
+          <div class="phone-input-wrapper">
+            <span class="phone-prefix">+254</span>
+            <input type="tel" id="mpesaPhone" class="form-input" placeholder="708374149" maxlength="9">
+          </div>
+          <span class="input-hint">Enter your number without the leading 0 (e.g. 708374149)</span>
+        </div>
+
+        <button id="payNowBtn" class="btn btn-primary btn-pay">
+          <span>Pay KES 1000</span>
+          <span class="pay-arrow">&rarr;</span>
+        </button>
+        <p class="secure-note">🔒 Encrypted on-device checkout via Daraja API</p>
+      </div>
+
+      <!-- Step 2: Processing Payment / Waiting for PIN -->
+      <div id="paymentProcessStep" class="payment-step hidden">
+        <div class="payment-loader-container">
+          <div class="payment-spinner"></div>
+          <div class="payment-pulse-dot"></div>
+        </div>
+        <h3>Check Your Phone!</h3>
+        <p class="processing-msg">We've sent an M-PESA STK prompt to your phone.</p>
+        <div class="instructions-box">
+          <ol>
+            <li>Unlock your phone screen.</li>
+            <li>Enter your <strong>M-PESA PIN</strong> when prompted.</li>
+            <li>Confirm the payment of <strong>KES 1000</strong> to <strong>antiDELETE</strong>.</li>
+          </ol>
+        </div>
+        <p class="polling-status">Waiting for confirmation... <span id="paymentTimer">45</span>s</p>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div id="paymentSuccessStep" class="payment-step hidden">
+        <div class="success-icon-container">
+          <div class="success-checkmark">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <circle class="success-circle" cx="26" cy="26" r="25" fill="none"/>
+              <path class="success-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="success-title">Payment Confirmed!</h3>
+        <p class="success-desc">Thank you for your purchase. Your download has started automatically.</p>
+        <button id="closeSuccessBtn" class="btn btn-primary" style="width: 100%;">Close</button>
+      </div>
+
+      <!-- Step 4: Error -->
+      <div id="paymentErrorStep" class="payment-step hidden">
+        <div class="error-icon-container">❌</div>
+        <h3 class="error-title">Payment Failed</h3>
+        <p id="paymentErrorMsg" class="error-desc">The request was cancelled or timed out. Please try again.</p>
+        <button id="retryPaymentBtn" class="btn btn-secondary" style="width: 100%;">Try Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Deleted Messages Modal -->
+  <div id="contactMessagesModal" class="modal-overlay hidden">
+    <div class="payment-card chat-detail-card" style="max-height: 85vh; display: flex; flex-direction: column; padding: 30px 24px;">
+      <button id="closeChatDetailBtn" class="modal-close-btn">&times;</button>
+      <div class="chat-detail-header" style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+        <h3 id="chatDetailSender" style="font-family: var(--font-title); color: var(--text-primary); font-size: 20px; margin-bottom: 6px; word-break: break-all;">Sender Name</h3>
+        <span id="chatDetailCount" class="message-badge badge-deleted" style="display: inline-block;">0 deleted messages</span>
+      </div>
+      <div id="chatDetailList" class="chat-detail-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 4px;">
+        <!-- Messages populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
