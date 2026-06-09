@@ -2265,45 +2265,38 @@ body.apk-mode .activation-container {
   }
 }
 
-/* Concentric Ripple Rings */
+/* Concentric Ripple Rings - Animating Infinitely (like Live Data blink) */
 .wa-ripple-ring {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
   width: 100%;
   height: 100%;
+  border: 1.5px solid #25d366;
   border-radius: 50%;
-  border: 2px solid #25d366;
-  opacity: 0;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  animation: pulse-ring-expand-wa 3s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
   pointer-events: none;
   box-sizing: border-box;
 }
 
-.whatsapp-float.animate .wa-ripple-ring:nth-child(1) {
-  animation: wa-ripple 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) 1;
+.wa-ripple-ring:nth-child(2) {
+  animation-delay: 1s;
 }
 
-.whatsapp-float.animate .wa-ripple-ring:nth-child(2) {
-  animation: wa-ripple 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) 0.2s 1;
+.wa-ripple-ring:nth-child(3) {
+  animation-delay: 2s;
 }
 
-.whatsapp-float.animate .wa-ripple-ring:nth-child(3) {
-  animation: wa-ripple 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) 0.4s 1;
-}
-
-@keyframes wa-ripple {
+@keyframes pulse-ring-expand-wa {
   0% {
-    transform: scale(1);
-    opacity: 0.8;
-    border-color: #25d366;
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.9;
   }
-  50% {
-    border-color: #34d399;
-  }
-  100% {
-    transform: scale(2.2);
+  80%, 100% {
+    transform: translate(-50%, -50%) scale(2.5);
     opacity: 0;
-    border-color: #059669;
   }
 }
 
