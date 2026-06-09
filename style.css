@@ -755,6 +755,14 @@ h1 {
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 12px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.filter-tabs::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 
 .tab-btn {
@@ -767,6 +775,7 @@ h1 {
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover {
@@ -837,6 +846,36 @@ h1 {
 .badge-normal {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-secondary);
+}
+
+.badge-whatsapp {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-tel {
+  background: rgba(0, 136, 204, 0.1);
+  color: #0088cc;
+  border: 1px solid rgba(0, 136, 204, 0.2);
+}
+
+.badge-fb {
+  background: rgba(0, 132, 255, 0.1);
+  color: #0084ff;
+  border: 1px solid rgba(0, 132, 255, 0.2);
+}
+
+.badge-ig {
+  background: rgba(225, 48, 108, 0.1);
+  color: #e1306c;
+  border: 1px solid rgba(225, 48, 108, 0.2);
+}
+
+.badge-sms {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .empty-state {

@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "antidelete.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // Upgraded from 1 to support app_source column
 
     public static final String TABLE_MESSAGES = "messages";
     public static final String COLUMN_ID = "id";
@@ -17,6 +17,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_CONTENT = "content";
     public static final String COLUMN_TIMESTAMP = "timestamp";
     public static final String COLUMN_IS_DELETED = "is_deleted";
+    public static final String COLUMN_APP_SOURCE = "app_source";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -29,24 +30,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_SENDER + " TEXT, " +
                 COLUMN_CONTENT + " TEXT, " +
                 COLUMN_TIMESTAMP + " INTEGER, " +
-                COLUMN_IS_DELETED + " INTEGER DEFAULT 0)";
+                COLUMN_IS_DELETED + " INTEGER DEFAULT 0, " +
+                COLUMN_APP_SOURCE + " TEXT DEFAULT 'WhatsApp')";
         db.execSQL(createTable);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
-        onCreate(db);
+        if (oldVersion < 2) {
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_MESSAGES + " ADD COLUMN " + COLUMN_APP_SOURCE + " TEXT DEFAULT 'WhatsApp'");
+            } catch (Exception e) {
+                db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
+                onCreate(db);
+            }
+        }
     }
 
-    public synchronized void insertMessage(String sender, String content, long timestamp) {
+    public synchronized void insertMessage(String sender, String content, long timestamp, String appSource) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_SENDER, sender);
         values.put(COLUMN_CONTENT, content);
         values.put(COLUMN_TIMESTAMP, timestamp);
         values.put(COLUMN_IS_DELETED, 0);
+        values.put(COLUMN_APP_SOURCE, appSource);
         db.insert(TABLE_MESSAGES, null, values);
+    }
+
+    public synchronized void insertMessage(String sender, String content, long timestamp) {
+        insertMessage(sender, content, timestamp, "WhatsApp");
     }
 
     public synchronized boolean markLastMessageDeleted(String sender, String senderPrefix) {
@@ -105,14 +118,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return markLastMessageDeleted(sender, null);
     }
 
-    public synchronized void insertPlaceholderDeletedMessage(String sender, String content, long timestamp) {
+    public synchronized void insertPlaceholderDeletedMessage(String sender, String content, long timestamp, String appSource) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_SENDER, sender);
         values.put(COLUMN_CONTENT, content);
         values.put(COLUMN_TIMESTAMP, timestamp);
         values.put(COLUMN_IS_DELETED, 1);
+        values.put(COLUMN_APP_SOURCE, appSource);
         db.insert(TABLE_MESSAGES, null, values);
+    }
+
+    public synchronized void insertPlaceholderDeletedMessage(String sender, String content, long timestamp) {
+        insertPlaceholderDeletedMessage(sender, content, timestamp, "WhatsApp");
     }
 
     public synchronized String getMessagesJson() {
@@ -124,12 +142,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         json.append("[");
 
         if (cursor.moveToFirst()) {
+            int idIndex = cursor.getColumnIndex(COLUMN_ID);
+            int senderIndex = cursor.getColumnIndex(COLUMN_SENDER);
+            int contentIndex = cursor.getColumnIndex(COLUMN_CONTENT);
+            int timestampIndex = cursor.getColumnIndex(COLUMN_TIMESTAMP);
+            int isDeletedIndex = cursor.getColumnIndex(COLUMN_IS_DELETED);
+            int appSourceIndex = cursor.getColumnIndex(COLUMN_APP_SOURCE);
+
             do {
-                int id = cursor.getInt(0);
-                String sender = cursor.getString(1);
-                String content = cursor.getString(2);
-                long timestamp = cursor.getLong(3);
-                int isDeleted = cursor.getInt(4);
+                int id = cursor.getInt(idIndex);
+                String sender = cursor.getString(senderIndex);
+                String content = cursor.getString(contentIndex);
+                long timestamp = cursor.getLong(timestampIndex);
+                int isDeleted = cursor.getInt(isDeletedIndex);
+                String appSource = appSourceIndex != -1 ? cursor.getString(appSourceIndex) : "WhatsApp";
+                if (appSource == null) appSource = "WhatsApp";
 
                 if (json.length() > 1) {
                     json.append(",");
@@ -140,7 +167,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     .append("\"sender\":\"").append(escapeJson(sender)).append("\",")
                     .append("\"content\":\"").append(escapeJson(content)).append("\",")
                     .append("\"timestamp\":").append(timestamp).append(",")
-                    .append("\"is_deleted\":").append(isDeleted)
+                    .append("\"is_deleted\":").append(isDeleted).append(",")
+                    .append("\"app_source\":\"").append(escapeJson(appSource)).append("\"")
                     .append("}");
 
             } while (cursor.moveToNext());

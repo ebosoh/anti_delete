@@ -22,15 +22,39 @@ public class NotificationService extends NotificationListenerService {
         String packageName = sbn.getPackageName();
         if (packageName == null) return;
 
-        boolean isWhatsApp = packageName.equals("com.whatsapp") ||
-                             packageName.equals("com.whatsapp.w4b") ||
-                             packageName.equals("com.gbwhatsapp") ||
-                             packageName.equals("com.fmwhatsapp") ||
-                             packageName.equals("com.yowhatsapp") ||
-                             packageName.equals("com.whatsapp.plus");
+        String appSource = "WhatsApp";
+        boolean isTargetApp = false;
 
-        if (!isWhatsApp) {
-            return; // Only monitor WhatsApp notifications
+        if (packageName.equals("com.whatsapp") ||
+            packageName.equals("com.whatsapp.w4b") ||
+            packageName.equals("com.gbwhatsapp") ||
+            packageName.equals("com.fmwhatsapp") ||
+            packageName.equals("com.yowhatsapp") ||
+            packageName.equals("com.whatsapp.plus")) {
+            isTargetApp = true;
+            appSource = "WhatsApp";
+        } else if (packageName.equals("org.telegram.messenger") ||
+                   packageName.equals("org.telegram.messenger.web") ||
+                   packageName.equals("org.thunderdog.challegram")) {
+            isTargetApp = true;
+            appSource = "Tel";
+        } else if (packageName.equals("com.facebook.orca") ||
+                   packageName.equals("com.facebook.mlite")) {
+            isTargetApp = true;
+            appSource = "FB";
+        } else if (packageName.equals("com.instagram.android")) {
+            isTargetApp = true;
+            appSource = "IG";
+        } else if (packageName.equals("com.google.android.apps.messaging") ||
+                   packageName.equals("com.samsung.android.messaging") ||
+                   packageName.equals("com.android.mms") ||
+                   (sbn.getNotification() != null && Notification.CATEGORY_MESSAGE.equals(sbn.getNotification().category))) {
+            isTargetApp = true;
+            appSource = "SMS";
+        }
+
+        if (!isTargetApp) {
+            return; // Only monitor target app notifications
         }
 
         Notification notification = sbn.getNotification();
@@ -60,13 +84,13 @@ public class NotificationService extends NotificationListenerService {
         // Keep lines array reference to check for grouped updates
         CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
 
-        // Check for deletion notifications inside EXTRA_TEXT_LINES (for grouped notifications)
-        if (lines != null && lines.length > 0) {
+        // Check for deletion notifications inside EXTRA_TEXT_LINES (for grouped notifications) - WhatsApp specific
+        if (appSource.equals("WhatsApp") && lines != null && lines.length > 0) {
             for (CharSequence lineCharSeq : lines) {
                 if (lineCharSeq == null) continue;
                 String lineText = lineCharSeq.toString().trim();
                 if (isDeletionNotification(lineText)) {
-                    processDeletion(title, lineText, sbn.getPostTime());
+                    processDeletion(title, lineText, sbn.getPostTime(), appSource);
                     notifyWebView();
                     return; // Stop processing after handling the deletion
                 }
@@ -81,16 +105,23 @@ public class NotificationService extends NotificationListenerService {
             return;
         }
 
-        // Check if this is a "message deleted" notification first
-        boolean isDeletion = isDeletionNotification(text);
+        // Check if this is a "message deleted" notification first - WhatsApp specific
+        boolean isDeletion = appSource.equals("WhatsApp") && isDeletionNotification(text);
 
-        // Filter out WhatsApp system notifications (unless it is a deletion event)
+        // Filter out system notifications
         if (!isDeletion) {
-            if (text.equals("Checking for new messages") ||
-                text.startsWith("WhatsApp Web is currently active") ||
-                text.equals("Backup in progress") ||
-                title.equals("WhatsApp")) {
-                return;
+            if (appSource.equals("WhatsApp")) {
+                if (text.equals("Checking for new messages") ||
+                    text.startsWith("WhatsApp Web is currently active") ||
+                    text.equals("Backup in progress") ||
+                    title.equals("WhatsApp")) {
+                    return;
+                }
+            } else if (appSource.equals("Tel")) {
+                // Ignore background task notifications or Telegram system messages
+                if (title.equals("Telegram") && (text.contains("running") || text.contains("background"))) {
+                    return;
+                }
             }
         }
 
@@ -98,17 +129,17 @@ public class NotificationService extends NotificationListenerService {
 
         // Process message
         if (isDeletion) {
-            processDeletion(title, text, timestamp);
+            processDeletion(title, text, timestamp, appSource);
         } else {
             // Save the incoming message
-            dbHelper.insertMessage(title, text, timestamp);
-            Log.d(TAG, "Logged message from " + title + ": " + text);
+            dbHelper.insertMessage(title, text, timestamp, appSource);
+            Log.d(TAG, "Logged message from " + title + " (" + appSource + "): " + text);
         }
 
         notifyWebView();
     }
 
-    private void processDeletion(String title, String text, long timestamp) {
+    private void processDeletion(String title, String text, long timestamp, String appSource) {
         boolean success = false;
         // Extract sender name prefix for group chats (format: "Sender Name: Message content")
         int colonIdx = text.indexOf(": ");
@@ -123,7 +154,7 @@ public class NotificationService extends NotificationListenerService {
         
         if (!success) {
             // Fallback: If no original message was found to mark deleted, insert a new placeholder message marked as deleted
-            dbHelper.insertPlaceholderDeletedMessage(title, text, timestamp);
+            dbHelper.insertPlaceholderDeletedMessage(title, text, timestamp, appSource);
         }
     }
 

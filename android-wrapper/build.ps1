@@ -103,6 +103,8 @@ if (Test-Path antidelete.apk) {
     $sizeKb = [Math]::Round($size / 1024, 2)
     Write-Host "APK Compiled Successfully! Output file: antidelete.apk" -ForegroundColor Green
     Write-Host "Final APK size: $sizeKb KB" -ForegroundColor Green
+    Copy-Item antidelete.apk ..\antidelete.apk -Force
+    Write-Host "Copied APK to web server directory: antidelete.apk" -ForegroundColor Green
 } else {
     Write-Error "Failed to build APK."
 }

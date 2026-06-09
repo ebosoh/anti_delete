@@ -9,12 +9,15 @@ if (urlParams.get("apk") === "true" && typeof AndroidBridge === "undefined") {
   window.AndroidBridge = {
     getMessages: function() {
       return JSON.stringify([
-        { id: 1, sender: "James Wafula", content: "Hey, are you free tonight?", timestamp: Date.now() - 600000, is_deleted: 0 },
-        { id: 2, sender: "James Wafula", content: "I bought you a surprise gift! 🎁", timestamp: Date.now() - 300000, is_deleted: 1 },
-        { id: 3, sender: "Sarah", content: "Did you finish the report?", timestamp: Date.now() - 200000, is_deleted: 0 },
-        { id: 4, sender: "Sarah", content: "Oops, sent to wrong person", timestamp: Date.now() - 150000, is_deleted: 1 },
-        { id: 5, sender: "Grogan spares zone", content: "John: Hey check this out", timestamp: Date.now() - 100000, is_deleted: 0 },
-        { id: 6, sender: "Grogan spares zone", content: "John: 🚫 This message was deleted", timestamp: Date.now() - 50000, is_deleted: 1 }
+        { id: 1, sender: "James Wafula", content: "Hey, are you free tonight?", timestamp: Date.now() - 600000, is_deleted: 0, app_source: "WhatsApp" },
+        { id: 2, sender: "James Wafula", content: "I bought you a surprise gift! 🎁", timestamp: Date.now() - 300000, is_deleted: 1, app_source: "WhatsApp" },
+        { id: 3, sender: "Sarah", content: "Did you finish the report?", timestamp: Date.now() - 200000, is_deleted: 0, app_source: "Tel" },
+        { id: 4, sender: "Sarah", content: "Oops, sent to wrong person", timestamp: Date.now() - 150000, is_deleted: 1, app_source: "Tel" },
+        { id: 5, sender: "Grogan spares zone", content: "John: Hey check this out", timestamp: Date.now() - 100000, is_deleted: 0, app_source: "WhatsApp" },
+        { id: 6, sender: "Grogan spares zone", content: "John: 🚫 This message was deleted", timestamp: Date.now() - 50000, is_deleted: 1, app_source: "WhatsApp" },
+        { id: 7, sender: "+254712345678", content: "Your M-PESA code is 8JKF892. Do not share.", timestamp: Date.now() - 80000, is_deleted: 0, app_source: "SMS" },
+        { id: 8, sender: "Alice", content: "Are we meeting today?", timestamp: Date.now() - 70000, is_deleted: 0, app_source: "FB" },
+        { id: 9, sender: "InstaUser", content: "Liked your photo!", timestamp: Date.now() - 60000, is_deleted: 0, app_source: "IG" }
       ]);
     },
     isNotificationServiceEnabled: function() { return true; },
@@ -102,6 +105,8 @@ function renderMessages(messages) {
     
     const formattedDate = new Date(msg.timestamp).toLocaleString();
     const isDeleted = Number(msg.is_deleted) === 1;
+    const appSource = msg.app_source || "WhatsApp";
+    const appBadgeClass = "badge-" + appSource.toLowerCase();
 
     item.innerHTML = `
       <div class="message-meta">
@@ -109,9 +114,14 @@ function renderMessages(messages) {
         <span>${formattedDate}</span>
       </div>
       <div class="message-body">${escapeHtml(msg.content)}</div>
-      <span class="message-badge ${isDeleted ? 'badge-deleted' : 'badge-normal'}">
-        ${isDeleted ? '🛡️ Deleted & Saved' : 'Captured'}
-      </span>
+      <div style="display: flex; gap: 8px; margin-top: 4px;">
+        <span class="message-badge app-badge ${appBadgeClass}">
+          ${appSource}
+        </span>
+        <span class="message-badge ${isDeleted ? 'badge-deleted' : 'badge-normal'}">
+          ${isDeleted ? '🛡️ Deleted & Saved' : 'Captured'}
+        </span>
+      </div>
     `;
     listContainer.appendChild(item);
   });
@@ -249,13 +259,7 @@ function filterAndRenderMessages() {
   const searchInput = document.getElementById("searchBar");
   const query = searchInput ? searchInput.value.toLowerCase() : "";
 
-  if (activeFilter === "all") {
-    const filtered = localMessages.filter(msg => {
-      const matchesSearch = msg.sender.toLowerCase().includes(query) || msg.content.toLowerCase().includes(query);
-      return matchesSearch;
-    });
-    renderMessages(filtered);
-  } else if (activeFilter === "deleted") {
+  if (activeFilter === "deleted") {
     const contactsMap = {};
     localMessages.forEach(msg => {
       if (Number(msg.is_deleted) === 1) {
@@ -284,6 +288,14 @@ function filterAndRenderMessages() {
     });
 
     renderContactsList(contacts);
+  } else {
+    // activeFilter is "all", "WhatsApp", "Tel", "FB", "IG", or "SMS"
+    const filtered = localMessages.filter(msg => {
+      const matchesSearch = msg.sender.toLowerCase().includes(query) || msg.content.toLowerCase().includes(query);
+      const matchesFilter = activeFilter === "all" || (msg.app_source && msg.app_source === activeFilter);
+      return matchesSearch && matchesFilter;
+    });
+    renderMessages(filtered);
   }
 }
 
