@@ -2208,3 +2208,123 @@ body.apk-mode .activation-container {
   font-weight: 600;
 }
 
+/* Premium Floating WhatsApp Support Button */
+.whatsapp-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  background-color: #25d366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+  z-index: 999;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), bottom 0.3s ease, box-shadow 0.3s ease;
+  text-decoration: none;
+}
+
+.whatsapp-float:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(37, 211, 102, 0.5), 0 0 0 4px rgba(37, 211, 102, 0.15);
+}
+
+.whatsapp-float:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-float .wa-icon {
+  width: 32px;
+  height: 32px;
+  color: #ffffff;
+  fill: currentColor;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+/* Bounce animation for icon inside the button */
+.whatsapp-float.animate .wa-icon {
+  animation: wa-icon-bounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1;
+}
+
+@keyframes wa-icon-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+/* Concentric Ripple Rings */
+.wa-ripple-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #25d366;
+  opacity: 0;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.whatsapp-float.animate .wa-ripple-ring:nth-child(1) {
+  animation: wa-ripple 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) 1;
+}
+
+.whatsapp-float.animate .wa-ripple-ring:nth-child(2) {
+  animation: wa-ripple 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) 0.2s 1;
+}
+
+.whatsapp-float.animate .wa-ripple-ring:nth-child(3) {
+  animation: wa-ripple 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) 0.4s 1;
+}
+
+@keyframes wa-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+    border-color: #25d366;
+  }
+  50% {
+    border-color: #34d399;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+    border-color: #059669;
+  }
+}
+
+/* Shift floating button upward when ad container is visible */
+#adContainer:not(.hidden) ~ .whatsapp-float {
+  bottom: 125px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .whatsapp-float {
+    bottom: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35);
+  }
+
+  .whatsapp-float .wa-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  #adContainer:not(.hidden) ~ .whatsapp-float {
+    bottom: 115px;
+  }
+}
+
+

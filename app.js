@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadAds();
   setupShare();
   initPaymentFlow();
+  initWhatsAppFloat();
 });
 
 // 1. Detect if inside APK or Browser
@@ -1046,5 +1047,24 @@ function showCopySuccess() {
   if (btn) {
     btn.textContent = "✅ Copied!";
     setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+  }
+}
+
+/** Handles WhatsApp Float Button ripple animations. */
+function initWhatsAppFloat() {
+  const waFloat = document.getElementById("whatsappFloatLink");
+  if (waFloat) {
+    waFloat.addEventListener("click", () => {
+      // Remove class if already there to allow restarting animation on successive clicks
+      waFloat.classList.remove("animate");
+      // Force layout recalculation to restart CSS animations
+      void waFloat.offsetWidth;
+      waFloat.classList.add("animate");
+      
+      // Auto-remove class after animation cycle completes (approx 1.8s)
+      setTimeout(() => {
+        waFloat.classList.remove("animate");
+      }, 1800);
+    });
   }
 }
