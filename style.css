@@ -1419,6 +1419,11 @@ body.apk-mode {
   width: 100%;
 }
 
+body.apk-mode .web-only {
+  display: none !important;
+}
+
+
 body.apk-mode header {
   height: auto;
   min-height: 60px;
