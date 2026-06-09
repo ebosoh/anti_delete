@@ -67,11 +67,36 @@ public class NotificationService extends NotificationListenerService {
         CharSequence titleCharSeq = extras.getCharSequence(Notification.EXTRA_TITLE);
         String title = titleCharSeq != null ? titleCharSeq.toString().trim() : "";
 
-        // Extract Text (with fallbacks for BigText and TextLines)
+        // Extract Text (with fallbacks for MessagingStyle, BigText, and TextLines)
         String text = "";
         CharSequence textCharSeq = extras.getCharSequence(Notification.EXTRA_TEXT);
         if (textCharSeq != null) {
             text = textCharSeq.toString().trim();
+        }
+
+        // Fallback 1: Extract from android.messages (MessagingStyle) for Telegram, FB, IG, WhatsApp, etc.
+        if (text.isEmpty() || appSource.equals("Tel") || appSource.equals("FB") || appSource.equals("IG")) {
+            android.os.Parcelable[] messages = (android.os.Parcelable[]) extras.get("android.messages");
+            if (messages != null && messages.length > 0) {
+                android.os.Parcelable latestParcel = messages[messages.length - 1];
+                if (latestParcel instanceof Bundle) {
+                    Bundle msgBundle = (Bundle) latestParcel;
+                    CharSequence msgText = msgBundle.getCharSequence("text");
+                    if (msgText != null && !msgText.toString().trim().isEmpty()) {
+                        String extractedText = msgText.toString().trim();
+                        
+                        // For group chats, if title is group name, prefix the sender name to the message text
+                        CharSequence msgSender = msgBundle.getCharSequence("sender");
+                        if (msgSender != null && !msgSender.toString().trim().isEmpty()) {
+                            String senderName = msgSender.toString().trim();
+                            if (!title.isEmpty() && !title.equals(senderName) && !extractedText.startsWith(senderName + ":")) {
+                                extractedText = senderName + ": " + extractedText;
+                            }
+                        }
+                        text = extractedText;
+                    }
+                }
+            }
         }
 
         if (text.isEmpty()) {
