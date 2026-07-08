@@ -9,7 +9,7 @@ if (urlParams.get("apk") === "true" && typeof AndroidBridge === "undefined") {
   window.AndroidBridge = {
     getMessages: function() {
       return JSON.stringify([
-        { id: 1, sender: "James Wafula", content: "Hey, are you free tonight?", timestamp: Date.now() - 600000, is_deleted: 0, app_source: "WhatsApp" },
+        { id: 1, sender: "James Wafula", content: "Kesho ukuje na rolls kumi za bangi na pia hio Petrol 10 litres upee watchman atufichie. Nisha msort 7k za macho.... Jontez", timestamp: Date.now() - 600000, is_deleted: 0, app_source: "WhatsApp" },
         { id: 2, sender: "James Wafula", content: "I bought you a surprise gift! 🎁", timestamp: Date.now() - 300000, is_deleted: 1, app_source: "WhatsApp" },
         { id: 3, sender: "Sarah", content: "Did you finish the report?", timestamp: Date.now() - 200000, is_deleted: 0, app_source: "Tel" },
         { id: 4, sender: "Sarah", content: "Oops, sent to wrong person", timestamp: Date.now() - 150000, is_deleted: 1, app_source: "Tel" },
