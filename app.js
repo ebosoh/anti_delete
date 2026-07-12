@@ -2,6 +2,8 @@
 
 // Configuration
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB4XY-xVrQSP-wNDGCyx3nURP5rSrHYufSbqZmtCp6ecOCNe4OW19Rmz_nHLchre4HuQ/exec"; // Update with actual URL after deploy
+const ADSENSE_PUBLISHER_ID = "ca-pub-1997711829882505"; // Google AdSense Publisher ID
+const ADSENSE_SLOT_ID = ""; // Leave empty for Auto Ads / Sponsored fallback, or set to your Ad Unit Slot ID for banner space
 
 // 0. Browser Mock Mode for Developer Testing (activated via ?apk=true in URL)
 const urlParams = new URLSearchParams(window.location.search);
@@ -457,6 +459,23 @@ function downloadApk() {
 
 // 4. Advertisement Rotator & Tracking
 function loadAds() {
+  // 1. Load Google AdSense Script if Publisher ID is configured
+  if (ADSENSE_PUBLISHER_ID && ADSENSE_PUBLISHER_ID !== "ca-pub-XXXXXXXXXXXXXXXX") {
+    if (!document.querySelector('script[src*="adsbygoogle.js"]')) {
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUBLISHER_ID}`;
+      script.crossOrigin = "anonymous";
+      document.head.appendChild(script);
+    }
+  }
+
+  // 2. If AdSense Slot ID is also configured, show AdSense inside the banner space
+  if (ADSENSE_PUBLISHER_ID && ADSENSE_PUBLISHER_ID !== "ca-pub-XXXXXXXXXXXXXXXX" && ADSENSE_SLOT_ID) {
+    displayAdsense();
+    return;
+  }
+
   const showFallbackAd = () => {
     const mockAd = {
       id: "mock-ad-demo",
@@ -486,6 +505,50 @@ function loadAds() {
       console.error("Error loading ads", err);
       showFallbackAd();
     });
+}
+
+function displayAdsense() {
+  const container = document.getElementById("adContainer");
+  const adContent = document.getElementById("adContent");
+  
+  // Inject AdSense unit code (using responsive format)
+  adContent.innerHTML = `
+    <ins class="adsbygoogle"
+         style="display:block;width:100%;height:100%;"
+         data-ad-client="${ADSENSE_PUBLISHER_ID}"
+         data-ad-slot="${ADSENSE_SLOT_ID}"
+         data-ad-format="horizontal"
+         data-full-width-responsive="true"></ins>
+  `;
+  
+  container.classList.remove("hidden");
+  
+  // Add padding to prevent ad overlapping contents
+  if (document.body.classList.contains("apk-mode")) {
+    const msgList = document.getElementById("messagesList");
+    if (msgList) msgList.style.paddingBottom = "110px";
+  } else {
+    document.body.style.paddingBottom = "120px";
+  }
+
+  // Push AdSense block initialization
+  try {
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  } catch (e) {
+    console.error("AdSense initialization failed:", e);
+  }
+
+  // Setup close handler
+  const closeBtn = document.getElementById("closeAdBtn");
+  closeBtn.onclick = () => {
+    container.classList.add("hidden");
+    if (document.body.classList.contains("apk-mode")) {
+      const msgList = document.getElementById("messagesList");
+      if (msgList) msgList.style.paddingBottom = "0px";
+    } else {
+      document.body.style.paddingBottom = "0px";
+    }
+  };
 }
 
 function displayAd(ad) {
