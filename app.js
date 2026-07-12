@@ -3,7 +3,7 @@
 // Configuration
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB4XY-xVrQSP-wNDGCyx3nURP5rSrHYufSbqZmtCp6ecOCNe4OW19Rmz_nHLchre4HuQ/exec"; // Update with actual URL after deploy
 const ADSENSE_PUBLISHER_ID = "ca-pub-1997711829882505"; // Google AdSense Publisher ID
-const ADSENSE_SLOT_ID = ""; // Leave empty for Auto Ads / Sponsored fallback, or set to your Ad Unit Slot ID for banner space
+const ADSENSE_SLOT_ID = "1764759378"; // Leave empty for Auto Ads / Sponsored fallback, or set to your Ad Unit Slot ID for banner space
 
 // 0. Browser Mock Mode for Developer Testing (activated via ?apk=true in URL)
 const urlParams = new URLSearchParams(window.location.search);
